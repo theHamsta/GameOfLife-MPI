@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 
 add_executable(gameoflifempi
 				src/board.c
+				src/global_board.c
 				main.cpp)
 
 find_package(MPI REQUIRED)

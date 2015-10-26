@@ -11,19 +11,21 @@ typedef uint32_t field_t;
 
 typedef struct board_s
 {
-	unsigned int m_width;
-	unsigned int m_height;
+	unsigned int width;
+	unsigned int height;
 	
-	field_t* m_data;
+	field_t* data;
 } board_t;
 
 
-void board_init(board_t* board, unsigned width, unsigned height);
+board_t* board_create(unsigned width, unsigned height);
 
 void board_reset(board_t* board);
 
 void board_print(board_t* board);
 
 void board_destroy(board_t* board);
+
+void board_step_local(board_t* newBoard, board_t* oldBoard);
 
 #endif // BOARD_H

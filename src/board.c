@@ -5,32 +5,38 @@
 #include <stdio.h>
 #include <string.h>
 
-void board_init(board_t* board, unsigned int width, unsigned int height)
+board_t* board_init(unsigned int width, unsigned int height)
 {
-	board->m_height = height;
-	board->m_width = width;
+	board_t* board = malloc(sizeof(board_t));
+	
+	assert(board);
+	
+	board->height = height;
+	board->height = width;
 	
 	assert ( width % BACTERIA_PER_FIELD == 0 && "width must be divisible by BACTERIA_PER_FIELD" );
 	
-	board->m_data = malloc( sizeof(field_t) * board->m_height * board->m_width / BACTERIA_PER_FIELD ); 
+	board->data = malloc( sizeof(field_t) * board->height * board->height / BACTERIA_PER_FIELD ); 
 	
-	if ( !board->m_data ) {
-		printf("malloc failed\n");
+	if ( !board->data ) {
+		printf("Allocation of board failed\n");
 		exit(EXIT_FAILURE);
 	}
+	
+	return board;
 }
 
 void board_destroy(board_t* board)
 {
-	free(board->m_data);
+	free(board->data);
 	free(board);
 }
 
 void board_reset(board_t* board)
 {
-	assert( board && board->m_data && "null pointer!" );
+	assert( board && board->data && "null pointer!" );
 	
-	memset(board->m_data, 0, sizeof(field_t) * board->m_height * board->m_width / BACTERIA_PER_FIELD );
+	memset(board->data, 0, sizeof(field_t) * board->height * board->height / BACTERIA_PER_FIELD );
 }
 
 void board_print(board_t* board)
