@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-board_t* board_init(unsigned int width, unsigned int height)
+board_t* board_create(unsigned int width, unsigned int height)
 {
 	board_t* board = malloc(sizeof(board_t));
 	
