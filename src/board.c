@@ -73,7 +73,9 @@ void board_step( board_t* board )
 	for ( unsigned int y = 0; y < board->height; y++ ) {
 		for( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD; x++ ) {
 			
-			field_update(current);
+			if(FIELD_IS_ALIVE(*current)) {
+				field_update(current);
+			}
 			current++;
 		}
 
@@ -81,7 +83,21 @@ void board_step( board_t* board )
 	for ( unsigned int y = 0; y < board->height; y++ ) {
 		for( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD; x++ ) {
 			
-			field_update(current);
+			
+			if(field_has_changed(current)) {
+				BROADCAST_LEFT			(*current, *(current - 1));
+				if ( y != 0 ) {
+					if ( x != 0 )
+						BROADCAST_TOP_LEFT(*current, *(above - 1));
+					BROADCAST_TOP			(*current, *(above));
+					if ( x != board->width )
+						BROADCAST_TOP_RIGHT	(*current, *(above + 1));
+				}
+				BROADCAST_RIGHT			(*current, *(current + 1));
+				BROADCAST_BOTTOM_RIGHT	(*current, *(below + 1));
+				BROADCAST_BOTTOM		(*current, *(below));
+				BROADCAST_BOTTOM_LEFT	(*current, *(below - 1));
+			}
 			
 			
 			
