@@ -11,6 +11,8 @@
 
 #define FIELD_NEIGHBOUR_MASK ( FIELD_ABOVE_MASK || FIELD_BELOW_MASK || FIELD_LEFT_AND_RIGHT_MASK );
 
+#define FIELD_GET_ELEMENT(FIELD, INDEX) (((FIELD).val >> (INDEX)) & 1)
+
 struct field_s 
 {
 	unsigned int above:6;
@@ -30,6 +32,8 @@ typedef union field_u {
 
 
 void field_update( field_t* field );
+
+void field_print( field_t* field );
 
 
 

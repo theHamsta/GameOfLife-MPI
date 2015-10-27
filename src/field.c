@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 // from: http://stackoverflow.com/questions/109023/how-to-count-the-number-of-set-bits-in-a-32-bit-integer
 uint32_t popcount(uint32_t i)
@@ -29,3 +30,11 @@ void field_update( field_t* field ) {
 				field->bitfield.newCells = bIsAlive << i;
 	}
 }
+
+void field_print(field_t* field)
+{
+	for ( unsigned int i = 0; i < BACTERIA_PER_FIELD; i++ ) {
+		printf("%c", FIELD_GET_ELEMENT(*field, i) ? 'X' : '_');
+	}
+}
+
