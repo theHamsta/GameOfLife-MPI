@@ -1,7 +1,5 @@
 #include "field.h"
 
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 
 // from: http://stackoverflow.com/questions/109023/how-to-count-the-number-of-set-bits-in-a-32-bit-integer
@@ -37,4 +35,10 @@ void field_print(field_t* field)
 		printf("%c", FIELD_GET_ELEMENT(*field, i) ? 'X' : '_');
 	}
 }
+
+bool field_has_changed(field_t* field)
+{
+	field->bitfield.newCells != field->bitfield.oldCells;
+}
+
 

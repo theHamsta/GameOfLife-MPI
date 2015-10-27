@@ -2,6 +2,7 @@
 #define FIELD_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define BACTERIA_PER_FIELD 4
 
@@ -34,6 +35,8 @@ typedef union field_u {
 void field_update( field_t* field );
 
 void field_print( field_t* field );
+
+bool field_has_changed ( field_t* field );
 
 
 
