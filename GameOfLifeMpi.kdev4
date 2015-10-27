@@ -1,4 +1,3 @@
 [Project]
-Name=GameOfLifeMpi
 Manager=KDevCMakeManager
-VersionControl=kdevgit
+Name=GameOfLifeMpi

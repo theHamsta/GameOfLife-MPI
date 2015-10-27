@@ -6,7 +6,7 @@ add_executable(gameoflifempi
 				src/board.c
 				src/global_board.c
 				src/field.c
-				main.cpp)
+				main.c)
 
 find_package(MPI REQUIRED)
 

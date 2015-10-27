@@ -8,7 +8,10 @@
 #include "field.h"
 
 
-
+#define BOARD_PADDING_X (1)
+#define BOARD_PADDING_Y (1)
+#define BOARD_LINE_SKIP(BOARD) ((BOARD).width + 2 * BOARD_PADDING_X)
+#define BOARD_PTR_FIRST_FIELD(BOARD) ((BOARD).data + BOARD_PADDING_Y * BOARD_LINE_SKIP(BOARD) + BOARD_PADDING_X)
 
 
 typedef struct board_s
@@ -23,6 +26,8 @@ typedef struct board_s
 board_t* board_create(unsigned width, unsigned height);
 
 void board_reset(board_t* board);
+
+void board_fillRandomly(board_t* board);
 
 void board_print(board_t* board);
 

@@ -12,33 +12,38 @@ uint32_t popcount(uint32_t i)
 
 
 void field_update( field_t* field ) {
-	for ( int i = 0; i < BACTERIA_PER_FIELD; i++ ) {
-		
-		uint32_t neighbours = (field->val >> i) & FIELD_NEIGHBOUR_MASK;
-		uint32_t numNeighbours = popcount(neighbours);
-		
-		bool bWasAlive = (field->bitfield.oldCells >> i) & 1;
-		
-		bool bIsAlive = false;
-		if( numNeighbours == 3 ) {
-			bIsAlive = true;
-		} else if ( bWasAlive && numNeighbours == 2 ) {
-			bIsAlive = true;
+	
+
+	for ( int y = 0; y < BACTERIA_PER_FIELD_Y; y++ ) {
+		for ( int x = 0; x < BACTERIA_PER_FIELD; x++ ) {
+			
+			uint32_t neighbours = (field->val >> FIELD_ELEMENT_SHIFT_FOR_MASK(x,y)) & FIELD_NEIGHBOUR_MASK;
+			uint32_t numNeighbours = popcount(neighbours);
+			
+			bool bWasAlive = (field->val >> FIELD_ELEMENT_SHIFT(x,y)) & 1;
+			
+			bool bIsAlive = false;
+			if( numNeighbours == 3 ) {
+				bIsAlive = true;
+			} else if ( bWasAlive && numNeighbours == 2 ) {
+				bIsAlive = true;
+			}
+			field->val = bIsAlive << FIELD_ELEMENT_SHIFT(x,y);
+			
+			field->bitfield.wasChanged = (bIsAlive != bWasAlive);
 		}
-				field->bitfield.newCells = bIsAlive << i;
 	}
 }
 
-void field_print(field_t* field)
+void field_print(field_t* field, unsigned int line)
 {
-	for ( unsigned int i = 0; i < BACTERIA_PER_FIELD; i++ ) {
-		printf("%c", FIELD_GET_ELEMENT(*field, i) ? 'X' : '_');
+	
+	for ( int x = 0; x < BACTERIA_PER_FIELD_X; x++ ) {
+		printf("%c", FIELD_GET_ELEMENT(*field, x, line) ? 'X' : '_');
 	}
+	
 }
 
-bool field_has_changed(field_t* field)
-{
-	field->bitfield.newCells != field->bitfield.oldCells;
-}
+
 
 
