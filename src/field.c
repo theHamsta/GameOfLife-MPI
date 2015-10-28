@@ -32,7 +32,7 @@ void field_update( field_t* field ) {
 			newField.val &= ~(1 << FIELD_ELEMENT_SHIFT_FOR_MASK(x+1,y+1));
 			newField.val |= bIsAlive << FIELD_ELEMENT_SHIFT_FOR_MASK(x+1,y+1);
 			
-			newField.bitfield.wasChanged = (bIsAlive != bWasAlive);
+			newField.bitfield.wasChanged |= (bIsAlive != bWasAlive);
 		}
 	}
 	*field = newField;
