@@ -1,19 +1,25 @@
 // #include <mpi.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "board.h"
 
 
 
-#define GLOBAL_BOARD_WIDTH 4*4
-#define GLOBAL_BOARD_HEIGHT 3
-#define NUM_ROUNDS 1
+#define GLOBAL_BOARD_WIDTH 4*2
+#define GLOBAL_BOARD_HEIGHT 3*1
+#define NUM_ROUNDS 2
 #define PERIODIC_BOUNDARY_CONDITIONS true
 
 
 void clearScreen() {
 	printf("\e[1;1H\e[2J");
+}
+
+void waitFor (unsigned int secs) {
+    int retTime = time(0) + secs;     // Get finishing time.
+    while (time(0) < retTime);    // Loop until it arrives.
 }
 
 int main(int argc, char** argv) {
@@ -47,29 +53,32 @@ int main(int argc, char** argv) {
 // 	field_t a, b;
 // 	
 // 	a.val = 0;
-// 	b.val = UINT32_MAX;
-// 	field_broadcastTopLeft(&a,&b);
+// 	b.val = FIELD_ABOVE_MASK | FIELD_BELOW_MASK;
+// // 	field_broadcastTopLeft(&a,&b);
 // 	
 // 	field_printDebugAllLines(&a);
 // 	field_printDebugAllLines(&b);
 	
 
 	printf("halo\n");
-	printf("%x\n", FIELD_ALL_ELEMENTS_BOTTOM_MASK);
+
 #ifdef DEBUG
 	printf("Warning! Debug mode");
 #endif
 
 	board_t* board = board_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT);
-	board_reset(board);
-		board_printDebug(board);
+
  	board_fillRandomly(board);
-	board_printDebug(board);
 	
+	board_print(board);
 	for( int i = 0; i < NUM_ROUNDS; i++ ) {
+		waitFor(1);
+		
 		board_step(board);
-		printf("\n");
-		board_printDebug(board);
+		
+// 		clearScreen();
+		board_print(board);
+		fflush(stdout); 
 	}
 	
 	

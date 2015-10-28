@@ -12,12 +12,12 @@ uint32_t popcount(uint32_t i)
 
 
 void field_update( field_t* field ) {
-	
+	field_t newField = *field;
 
 	for ( int y = 0; y < BACTERIA_PER_FIELD_Y; y++ ) {
-		for ( int x = 0; x < BACTERIA_PER_FIELD; x++ ) {
+		for ( int x = 0; x < BACTERIA_PER_FIELD_X; x++ ) {
 			
-			uint32_t neighbours = (field->val >> FIELD_ELEMENT_SHIFT_FOR_MASK(x,y)) & FIELD_NEIGHBOUR_MASK;
+			uint32_t neighbours = (field->val >> (y*FIELD_LINE_WIDTH + x)) & FIELD_NEIGHBOUR_MASK;
 			uint32_t numNeighbours = popcount(neighbours);
 			
 			bool bWasAlive = (field->val >> FIELD_ELEMENT_SHIFT_FOR_MASK(x+1,y+1)) & 1;
@@ -28,11 +28,14 @@ void field_update( field_t* field ) {
 			} else if ( bWasAlive && numNeighbours == 2 ) {
 				bIsAlive = true;
 			}
-			field->val = bIsAlive << FIELD_ELEMENT_SHIFT_FOR_MASK(x+1,y+1);
 			
-			field->bitfield.wasChanged = (bIsAlive != bWasAlive);
+			newField.val &= ~(1 << FIELD_ELEMENT_SHIFT_FOR_MASK(x+1,y+1));
+			newField.val |= bIsAlive << FIELD_ELEMENT_SHIFT_FOR_MASK(x+1,y+1);
+			
+			newField.val = (bIsAlive != bWasAlive);
 		}
 	}
+	*field = newField;
 }
 
 void field_print(field_t* field, unsigned int line)
