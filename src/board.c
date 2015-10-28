@@ -180,18 +180,33 @@ void board_fillRandomly(board_t* board)
 	
 	int memlimit = board_getMemoryUsageData(board) / sizeof(field_t);
 	
+	field_t* above = board->data + BOARD_PADDING_X;
 	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
+	field_t* below = current + BOARD_LINE_SKIP(*board);
+	
 	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
 		for ( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD_X; x++ ) {
 			int rnd = rand();
 		
-// 			printf("%i", board->data[(x+1) + (y+1)* (board->width / BACTERIA_PER_FIELD_X +2*BOARD_PADDING_X)].val);
-			board->data[(x+1) + (y+1)* (board->width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)].val = rnd & FIELD_ALL_ELEMENTS_MASK;
-			FIELD_SET_WAS_CHANGED(*current);
+			current->val |= rnd & FIELD_ALL_ELEMENTS_MASK;
+			
+			field_broadcastLeft			(current, current -1);
+			field_broadcastTopLeft		(current, above - 1);
+			field_broadcastTop			(current, above);
+			field_broadcastTopRight		(current, above + 1);
+			field_broadcastRight		(current, current + 1);
+			field_broadcastBottomRight	(current, below + 1);
+			field_broadcastBottom		(current, below);
+			field_broadcastBottomLeft	(current, below - 1);
+			
+			above++;
 			current++;
+			below++;
 			
 		}
+		above += 2 * BOARD_PADDING_X;
 		current += 2 * BOARD_PADDING_X;
+		below += 2 * BOARD_PADDING_X;
 	}
 	
 }

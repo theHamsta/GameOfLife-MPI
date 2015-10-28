@@ -105,8 +105,10 @@ struct field_s
 	unsigned int line4 :BACTERIA_PER_FIELD_X;
 	unsigned int left4 :1;
 	
+	// 5 lines a 6 bits = 30 bits
 	
-	bool wasChanged	   :1;
+	bool needsUpdateFromPast:1;
+	bool wasChanged	   		:1;
 };
 
 typedef union field_u {
