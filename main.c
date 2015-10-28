@@ -7,7 +7,7 @@
 
 
 
-#define GLOBAL_BOARD_WIDTH 4*2
+#define GLOBAL_BOARD_WIDTH 4*1
 #define GLOBAL_BOARD_HEIGHT 3*1
 #define NUM_ROUNDS 2
 #define PERIODIC_BOUNDARY_CONDITIONS true
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
 // 	field_printDebugAllLines(&b);
 	
 
-	printf("halo\n");
+
 
 #ifdef DEBUG
 	printf("Warning! Debug mode");
