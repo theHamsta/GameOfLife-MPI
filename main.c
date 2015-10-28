@@ -9,8 +9,8 @@
 
 
 
-#define GLOBAL_BOARD_WIDTH 4*100
-#define GLOBAL_BOARD_HEIGHT 3*1000
+#define GLOBAL_BOARD_WIDTH 4*500
+#define GLOBAL_BOARD_HEIGHT 3*200
 #define NUM_ROUNDS 100
 #define PERIODIC_BOUNDARY_CONDITIONS true
 
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
  	board_fillRandomly(board);
 	
 // 	board_print(board);
-// 	for( int i = 0; i < NUM_ROUNDS; i++ ) {
+// 	for( int i = 0; ; i++ ) {
 // 		usleep(100000);  
 // 		
 // 		board_step(board);
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 // 		board_print(board);
 // 		fflush(stdout); 
 // 	}
-// 	
+	
 	clock_t start = clock();
 	for( int i = 0; i < NUM_ROUNDS; i++ ) {
 		board_step(board);

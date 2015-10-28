@@ -41,11 +41,13 @@ board_t* board_create(unsigned int width, unsigned int height)
 
 size_t board_getMemoryUsageData(board_t* board)
 {
-	int fieldsForBoard = board->height * board->height / (BACTERIA_PER_FIELD);
-	int fieldsPadding = 2 * BOARD_PADDING_Y * ((board->width / BACTERIA_PER_FIELD_X) + 2 * BOARD_PADDING_X) + // padding row above and below field
-						2 * BOARD_PADDING_X * (board->height / BACTERIA_PER_FIELD_Y); 					   // padding column left and right of field
+// 	int fieldsForBoard = board->height * board->height / (BACTERIA_PER_FIELD);
+// 	int fieldsPadding = 2 * BOARD_PADDING_Y * ((board->width / BACTERIA_PER_FIELD_X) + 2 * BOARD_PADDING_X) + // padding row above and below field
+// 						2 * BOARD_PADDING_X * (board->height / BACTERIA_PER_FIELD_Y); 					   // padding column left and right of field
+// 	
+// 	return sizeof(field_t) * (fieldsForBoard + fieldsPadding);
 	
-	return sizeof(field_t) * (fieldsForBoard + fieldsPadding);
+	return sizeof(field_t) * (board->height / BACTERIA_PER_FIELD_Y + 2 * BOARD_PADDING_Y) * (board->width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X);
 }
 
 
@@ -176,11 +178,15 @@ void board_fillRandomly(board_t* board)
 // 	srand(time(NULL));
 	srand(14);
 	
+	int memlimit = board_getMemoryUsageData(board) / sizeof(field_t);
+	
 	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
 	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
 		for ( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD_X; x++ ) {
 			int rnd = rand();
-			current->val = rnd & FIELD_ALL_ELEMENTS_MASK;
+		
+// 			printf("%i", board->data[(x+1) + (y+1)* (board->width / BACTERIA_PER_FIELD_X +2*BOARD_PADDING_X)].val);
+			board->data[(x+1) + (y+1)* (board->width / BACTERIA_PER_FIELD_X +2*BOARD_PADDING_X)].val = rnd & FIELD_ALL_ELEMENTS_MASK;
 			FIELD_SET_WAS_CHANGED(*current);
 			current++;
 			
