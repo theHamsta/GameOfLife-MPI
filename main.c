@@ -1,14 +1,20 @@
 // #include <mpi.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "board.h"
 
 
-#define GLOBAL_BOARD_WIDTH 12
+
+#define GLOBAL_BOARD_WIDTH 4*4
 #define GLOBAL_BOARD_HEIGHT 3
+#define NUM_ROUNDS 1
 #define PERIODIC_BOUNDARY_CONDITIONS true
 
 
+void clearScreen() {
+	printf("\e[1;1H\e[2J");
+}
 
 int main(int argc, char** argv) {
 //     // Initialize the MPI environment
@@ -38,13 +44,36 @@ int main(int argc, char** argv) {
 //     // Finalize the MPI environment.
 //     MPI_Finalize();
 	
+// 	field_t a, b;
+// 	
+// 	a.val = 0;
+// 	b.val = UINT32_MAX;
+// 	field_broadcastTopLeft(&a,&b);
+// 	
+// 	field_printDebugAllLines(&a);
+// 	field_printDebugAllLines(&b);
 	
+
+	printf("halo\n");
+	printf("%x\n", FIELD_ALL_ELEMENTS_BOTTOM_MASK);
+#ifdef DEBUG
+	printf("Warning! Debug mode");
+#endif
+
 	board_t* board = board_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT);
-	board_fillRandomly(board);
-	board_print(board);
+	board_reset(board);
+		board_printDebug(board);
+ 	board_fillRandomly(board);
+	board_printDebug(board);
+	
+	for( int i = 0; i < NUM_ROUNDS; i++ ) {
+		board_step(board);
+		printf("\n");
+		board_printDebug(board);
+	}
 	
 	
 	
-	printf("%x\n",FIELD_ALL_ELEMENTS_MASK);
+	
 	
 }

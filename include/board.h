@@ -4,13 +4,14 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "field.h"
 
 
 #define BOARD_PADDING_X (1)
 #define BOARD_PADDING_Y (1)
-#define BOARD_LINE_SKIP(BOARD) ((BOARD).width + 2 * BOARD_PADDING_X)
+#define BOARD_LINE_SKIP(BOARD) ((BOARD).width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)
 #define BOARD_PTR_FIRST_FIELD(BOARD) ((BOARD).data + BOARD_PADDING_Y * BOARD_LINE_SKIP(BOARD) + BOARD_PADDING_X)
 
 
@@ -31,9 +32,13 @@ void board_fillRandomly(board_t* board);
 
 void board_print(board_t* board);
 
+void board_printDebug(board_t* board);
+
 void board_destroy(board_t* board);
 
 void board_step(board_t* board);
+
+size_t board_getMemoryUsageData(board_t* board);
 
 bool board_value_at( board_t* board, unsigned int x, unsigned int y );
 

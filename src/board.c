@@ -7,7 +7,14 @@
 #include <time.h>
 
 
-
+void field_broadcastLeft( field_t* field, field_t* neighbour );
+void field_broadcastTopLeft( field_t* field, field_t* neighbour );
+void field_broadcastTop( field_t* field, field_t* neighbour );
+void field_broadcastTopRight( field_t* field, field_t* neighbour );
+void field_broadcastRight( field_t* field, field_t* neighbour );
+void field_broadcastBottomRight( field_t* field, field_t* neighbour );
+void field_broadcastBottom( field_t* field, field_t* neighbour );
+void field_broadcastBottomLeft( field_t* field, field_t* neighbour );
 
 
 board_t* board_create(unsigned int width, unsigned int height)
@@ -22,10 +29,7 @@ board_t* board_create(unsigned int width, unsigned int height)
 	assert ( width % BACTERIA_PER_FIELD_X == 0 && "width must be divisible by BACTERIA_PER_FIELD_X" );
 	assert ( height % BACTERIA_PER_FIELD_Y == 0 && "height must be divisible by BACTERIA_PER_FIELD_Y" );
 	
-	int fieldsForBoard = board->height * board->height / BACTERIA_PER_FIELD;
-	int fieldsPadding = 2 * BOARD_PADDING_Y * (board->width + 2 * BOARD_PADDING_X) + // padding row above and below field
-						2 * BOARD_PADDING_X * board->height; 					   // padding column left and right of field
-	board->data = malloc( sizeof(field_t) * fieldsForBoard * fieldsPadding ); 
+	board->data = malloc( board_getMemoryUsageData(board) ); 
 	
 	if ( !board->data ) {
 		printf("Allocation of board failed\n");
@@ -34,6 +38,16 @@ board_t* board_create(unsigned int width, unsigned int height)
 	
 	return board;
 }
+
+size_t board_getMemoryUsageData(board_t* board)
+{
+	int fieldsForBoard = board->height * board->height / (BACTERIA_PER_FIELD);
+	int fieldsPadding = 2 * BOARD_PADDING_Y * ((board->width / BACTERIA_PER_FIELD_X) + 2 * BOARD_PADDING_X) + // padding row above and below field
+						2 * BOARD_PADDING_X * (board->height / BACTERIA_PER_FIELD_Y); 					   // padding column left and right of field
+	
+	return sizeof(field_t) * (fieldsForBoard + fieldsPadding);
+}
+
 
 void board_destroy(board_t* board)
 {
@@ -44,16 +58,20 @@ void board_destroy(board_t* board)
 void board_reset(board_t* board)
 {
 	assert( board && board->data && "null pointer!" );
+	int size =  board_getMemoryUsageData(board) ;
+	memset((char*)(board->data), 0, size );
 	
-	memset(board->data, 0, sizeof(field_t) * board->height * board->height / BACTERIA_PER_FIELD );
+// 	for(int i = 0; i < size/sizeof(field_t); i++){
+// 		(board->data)[i].val = 0;
+// 	}
 }
 
 void board_print(board_t* board)
 {
 	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
 	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
-		for ( unsigned int l = 0; l < BACTERIA_PER_FIELD_Y; l++ ) {
-			for ( unsigned int x = 0; x < board->width; x++ ) {
+		for ( int l = BACTERIA_PER_FIELD_Y - 1; l >= 0; l-- ) {
+			for ( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD_X; x++ ) {
 
 				field_print(current, l);
 				current++;
@@ -61,10 +79,29 @@ void board_print(board_t* board)
 			current -= board->width;
 			printf("\n");
 		}
-		current += 2 * BOARD_PADDING_X;
+		current += 2 * BOARD_PADDING_X + board->width;
 
 	}
 }
+
+void board_printDebug(board_t* board)
+{
+	field_t* current = board->data;
+	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y + 2 * BOARD_PADDING_Y; y++ ) {
+		for ( int l = BACTERIA_PER_FIELD_Y + 2 - 1; l >= 0; l-- ) {
+			for ( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X; x++ ) {
+				
+ 				field_printDebug(&board->data[x + y * (board->width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)], l);
+				current++;
+			}
+			current -= board->width + 2 * BOARD_PADDING_X;
+			printf("\n");
+		}
+		current += 2 * BOARD_PADDING_X + board->width;;
+
+	}
+}
+
 
 /*
 bool board_value_at(board_t* board, unsigned int x, unsigned int y)
@@ -82,34 +119,20 @@ void board_step( board_t* board )
 	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
 	field_t* below = current + BOARD_LINE_SKIP(*board);
 	
-	assert( board->height > 1 && "Board to small to process");
 	
-	for ( unsigned int y = 0; y < board->height; y++ ) {
-		for( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD; x++ ) {
-			
-			if(current->val != 0) {
-				field_update(current);
-			}
-			current++;
-		}
-		current += 2 * BOARD_PADDING_X;
-	}
-	
-	current = BOARD_PTR_FIRST_FIELD(*board);
-	
-	for ( unsigned int y = 0; y < board->height; y++ ) {
-		for( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD; x++ ) {
+	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
+		for( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD_X; x++ ) {
 			
 			
 			if(FIELD_WAS_CHANGED(*current)) {
-// 				BROADCAST_LEFT			(*current, *(current - 1));
-// 				BROADCAST_TOP_LEFT		(*current, *(above - 1));
-// 				BROADCAST_TOP			(*current, *(above));
-// 				BROADCAST_TOP_RIGHT		(*current, *(above + 1));
-// 				BROADCAST_RIGHT			(*current, *(current + 1));
-// 				BROADCAST_BOTTOM_RIGHT	(*current, *(below + 1));
-// 				BROADCAST_BOTTOM		(*current, *(below));
-// 				BROADCAST_BOTTOM_LEFT	(*current, *(below - 1));
+				field_broadcastLeft			(current, current - 1);
+				field_broadcastTopLeft		(current, above - 1);
+				field_broadcastTop			(current, above);
+				field_broadcastTopRight		(current, above + 1);
+				field_broadcastRight		(current, current + 1);
+				field_broadcastBottomRight	(current, below + 1);
+				field_broadcastBottom		(current, below);
+				field_broadcastBottomLeft	(current, below - 1);
 				
 				FIELD_UNSET_WAS_CHANGED(*current);
 			}
@@ -124,20 +147,43 @@ void board_step( board_t* board )
 		current += 2 * BOARD_PADDING_X;
 		below += 2 * BOARD_PADDING_X;
 	}
+	
+// 	board_printDebug(board);
+// 	current = BOARD_PTR_FIRST_FIELD(*board);
+// 	
+// 	
+// 	for ( unsigned int y = 0; y < board->height; y++ ) {
+// 		for( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD; x++ ) {
+// 			
+// 			if(current->val != 0) {
+// 				field_update(current);
+// 			}
+// 			current++;
+// 		}
+// 		current += 2 * BOARD_PADDING_X;
+// 	}
+	
+	
+	
 }
 
 void board_fillRandomly(board_t* board)
 {
-	srand(time(NULL));
+	board_reset(board);
+	
+// 	srand(time(NULL));
+	srand(14);
+	
 	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
-	for ( unsigned int y = 0; y < board->height; y++ ) {
-		for ( unsigned int x = 0; x < board->width; x++ ) {
-			
-			current->val = rand() & FIELD_ALL_ELEMENTS_MASK;
+	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
+		for ( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD_X; x++ ) {
+			int rnd = rand();
+			current->val =  FIELD_ALL_ELEMENTS_MASK;
+			FIELD_SET_WAS_CHANGED(*current);
 			current++;
+			
 		}
 		current += 2 * BOARD_PADDING_X;
-		printf("\n");
 	}
 	
 }
