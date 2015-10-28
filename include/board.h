@@ -12,7 +12,7 @@
 #define BOARD_PADDING_X (1)
 #define BOARD_PADDING_Y (1)
 #define BOARD_LINE_SKIP(BOARD) ((BOARD).width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)
-#define BOARD_PTR_FIRST_FIELD(BOARD) ((BOARD).data + BOARD_PADDING_Y * BOARD_LINE_SKIP(BOARD) + BOARD_PADDING_X)
+#define BOARD_PTR_FIRST_FIELD(BOARD, BUFFER) (BUFFER + BOARD_PADDING_Y * BOARD_LINE_SKIP(BOARD) + BOARD_PADDING_X)
 
 
 typedef struct board_s
@@ -20,7 +20,8 @@ typedef struct board_s
 	unsigned int width;
 	unsigned int height;
 	
-	field_t* data;
+	field_t* frontBuffer;
+	field_t* backBuffer;
 } board_t;
 
 
@@ -41,6 +42,8 @@ void board_step(board_t* board);
 size_t board_getMemoryUsageData(board_t* board);
 
 bool board_value_at( board_t* board, unsigned int x, unsigned int y );
+
+void board_bufferSwitch( board_t* board );
 
 
 #endif // BOARD_H

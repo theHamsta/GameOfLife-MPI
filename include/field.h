@@ -120,7 +120,7 @@ typedef union field_u {
 
 void field_initLuts();
 
-void field_update( field_t* field );
+void field_update( field_t* oldField, field_t* newField );
 
 void field_print( field_t* field, unsigned int line );
 

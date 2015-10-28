@@ -51,12 +51,12 @@ static void field_updateNeighbourCount( field_t* field ) {
 
 
 
-void field_updateWithLut( field_t* field ) {
+void field_updateWithLut( field_t* oldField, field_t* newField ) {
 	assert ( field_lutsInitialised || "LUTs need to be initialised by field_initLuts!" );
 	
-	uint32_t lowLutIdx = field->val & FIELD_THREE_LINES_MASK;
-	uint32_t midLutIdx = (field->val >> FIELD_LINE_WIDTH) & FIELD_THREE_LINES_MASK;
-	uint32_t highLutIdx = (field->val >> (2 * FIELD_LINE_WIDTH)) & FIELD_THREE_LINES_MASK;
+	uint32_t lowLutIdx = oldField->val & FIELD_THREE_LINES_MASK;
+	uint32_t midLutIdx = (oldField->val >> FIELD_LINE_WIDTH) & FIELD_THREE_LINES_MASK;
+	uint32_t highLutIdx = (oldField->val >> (2 * FIELD_LINE_WIDTH)) & FIELD_THREE_LINES_MASK;
 	
 	uint32_t lowRlt = (field_3x6line_lut[ lowLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) ] >> (lowLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X))) & ((1<<BACTERIA_PER_FIELD_X)-1);
 	
@@ -64,15 +64,15 @@ void field_updateWithLut( field_t* field ) {
 	
 	uint32_t highRlt = (field_3x6line_lut[ highLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) ] >> (highLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X))) & ((1<<BACTERIA_PER_FIELD_X)-1);
 	
-	field_t newField;
-	newField.val = (field->val & ~FIELD_ALL_ELEMENTS_MASK) | (highRlt << (3 * FIELD_LINE_WIDTH + 1)) | (midRlt << (2 * FIELD_LINE_WIDTH + 1)) | (lowRlt <<  FIELD_LINE_WIDTH + 1);
-	newField.bitfield.wasChanged = (newField.val != field->val);
-	*field = newField;
+	
+	newField->val = (oldField->val & ~FIELD_ALL_ELEMENTS_MASK) | (highRlt << (3 * FIELD_LINE_WIDTH + 1)) | (midRlt << (2 * FIELD_LINE_WIDTH + 1)) | (lowRlt <<  FIELD_LINE_WIDTH + 1);
+	newField->bitfield.wasChanged = (newField->val != oldField->val);
+	
 }
 
 
-void field_update( field_t* field ) {
-	field_updateWithLut(field);
+void field_update( field_t* oldField, field_t* newField ) {
+	field_updateWithLut(oldField, newField);
 }
 
 
