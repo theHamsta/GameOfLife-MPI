@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 
-global_board_t* global_board_create(unsigned int width, unsigned int height)
+global_board_t* global_boardCreate(unsigned int width, unsigned int height )
 {
 	global_board_t* global_board = malloc(sizeof(global_board_t));
 	

@@ -1,4 +1,4 @@
-// #include <mpi.h>
+#include <mpi.h>
 #include <stdio.h>
 #include <stdint.h>
 #include<stdlib.h>
@@ -25,42 +25,31 @@ void waitFor (time_t secs) {
 }
 
 int main(int argc, char** argv) {
-//     // Initialize the MPI environment
-//     MPI_Init(NULL, NULL);
-// 
-//     // Get the number of processes
-//     int world_size;
-//     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-// 
-//     // Get the rank of the process
-//     int world_rank;
-//     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-// 
-//     // Get the name of the processor
-//     char processor_name[MPI_MAX_PROCESSOR_NAME];
-//     int name_len;
-//     MPI_Get_processor_name(processor_name, &name_len);
-// 
-//     // Print off a hello world message
-//     printf("Hello world from processor %s, rank %d"
-//            " out of %d processors\n",
-//            processor_name, world_rank, world_size);
-// 
-// 	
-// 	
-// 	
-//     // Finalize the MPI environment.
-//     MPI_Finalize();
+    // Initialize the MPI environment
+    MPI_Init(NULL, NULL);
+
+    // Get the number of processes
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    // Get the rank of the process
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    // Get the name of the processor
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
+
+    // Print off a hello world message
+    printf("Hello world from processor %s, rank %d"
+           " out of %d processors\n",
+           processor_name, world_rank, world_size);
+
 	
-// 	field_t a, b;
-// 	
-// 	a.val = 0;
-// 	b.val = FIELD_ABOVE_MASK | FIELD_BELOW_MASK;
-// // 	field_broadcastTopLeft(&a,&b);
-// 	
-// 	field_printDebugAllLines(&a);
-// 	field_printDebugAllLines(&b);
 	
+	int coords[2] = { 1, 2 };
+	int communitcator = MPI_Cart_coords(MPI_COMM_WORLD, world_rank, 2, coords);
 
 
 
@@ -95,7 +84,9 @@ int main(int argc, char** argv) {
 	printf("%fs\n", seconds);
 	fflush(stdout); 
 	
-	
+		
+    // Finalize the MPI environment.
+    MPI_Finalize();
 	
 	
 	
