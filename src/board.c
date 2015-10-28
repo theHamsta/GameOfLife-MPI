@@ -180,7 +180,7 @@ void board_fillRandomly(board_t* board)
 	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
 		for ( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD_X; x++ ) {
 			int rnd = rand();
-			current->val = FIELD_ALL_ELEMENTS_MASK;
+			current->val = rnd & FIELD_ALL_ELEMENTS_MASK;
 			FIELD_SET_WAS_CHANGED(*current);
 			current++;
 			
