@@ -9,9 +9,9 @@
 
 
 
-#define GLOBAL_BOARD_WIDTH 4*500
-#define GLOBAL_BOARD_HEIGHT 3*200
-#define NUM_ROUNDS 100
+#define GLOBAL_BOARD_WIDTH 4*10000
+#define GLOBAL_BOARD_HEIGHT 3*1000
+#define NUM_ROUNDS 200
 #define PERIODIC_BOUNDARY_CONDITIONS true
 
 
@@ -64,10 +64,12 @@ int main(int argc, char** argv) {
 
 
 
-#ifdef DEBUG
-	printf("Warning! Debug mode");
+#ifdef NDEBUG
+	printf("Warning! Debug mode\n");
 #endif
 
+	field_initLuts();
+	
 	board_t* board = board_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT);
 
  	board_fillRandomly(board);

@@ -186,7 +186,7 @@ void board_fillRandomly(board_t* board)
 			int rnd = rand();
 		
 // 			printf("%i", board->data[(x+1) + (y+1)* (board->width / BACTERIA_PER_FIELD_X +2*BOARD_PADDING_X)].val);
-			board->data[(x+1) + (y+1)* (board->width / BACTERIA_PER_FIELD_X +2*BOARD_PADDING_X)].val = rnd & FIELD_ALL_ELEMENTS_MASK;
+			board->data[(x+1) + (y+1)* (board->width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)].val = rnd & FIELD_ALL_ELEMENTS_MASK;
 			FIELD_SET_WAS_CHANGED(*current);
 			current++;
 			

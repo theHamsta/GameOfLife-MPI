@@ -16,6 +16,8 @@
 #define FIELD_LEFT_AND_RIGHT_MASK ( 0x5 << (FIELD_LINE_WIDTH)) 
 #define FIELD_NEIGHBOUR_MASK ( FIELD_ABOVE_MASK | FIELD_BELOW_MASK | FIELD_LEFT_AND_RIGHT_MASK )
 
+#define FIELD_THREE_LINES_MASK ( (1<<(3*FIELD_LINE_WIDTH)) - 1 )
+
 #define FIELD_LINE_WIDTH_ONES ((1 << BACTERIA_PER_FIELD_X) - 1)
 #define FIELD_ALL_ELEMENTS_MASK ( (FIELD_LINE_WIDTH_ONES << FIELD_ELEMENT_SHIFT_FOR_MASK(1,1)) | (FIELD_LINE_WIDTH_ONES << FIELD_ELEMENT_SHIFT_FOR_MASK(1,2)) | (FIELD_LINE_WIDTH_ONES << FIELD_ELEMENT_SHIFT_FOR_MASK(1,3)))
 #define FIELD_NON_ELEMENTS_MASK (~FIELD_ALL_ELEMENTS_MASK)
@@ -79,6 +81,8 @@
 #define FIELD_NEIGHBOUR_TL_POS FIELD_ELEMENT_SHIFT_FOR_MASK(BACTERIA_PER_FIELD_X + 1, BACTERIA_PER_FIELD_Y + 1)
 #define FIELD_NEIGHBOUR_TR_POS FIELD_ELEMENT_SHIFT_FOR_MASK(0,BACTERIA_PER_FIELD_Y + 1)
 
+
+
 struct field_s 
 {
 	unsigned int right0:1;
@@ -113,6 +117,9 @@ typedef union field_u {
 
 
 
+
+void field_initLuts();
+
 void field_update( field_t* field );
 
 void field_print( field_t* field, unsigned int line );
@@ -121,7 +128,8 @@ void field_printDebug( field_t* field, int line );
 
 void field_printDebugAllLines( field_t* field );
 
-bool field_has_changed ( field_t* field );
+// bool field_has_changed ( field_t* field );
+
 
 void inline field_broadcastLeft( field_t* field, field_t* neighbour )
 {
