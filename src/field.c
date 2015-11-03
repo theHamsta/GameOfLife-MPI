@@ -58,11 +58,19 @@ void field_updateWithLut( field_t* field ) {
 	uint32_t midLutIdx = (field->val >> FIELD_LINE_WIDTH) & FIELD_THREE_LINES_MASK;
 	uint32_t highLutIdx = (field->val >> (2 * FIELD_LINE_WIDTH)) & FIELD_THREE_LINES_MASK;
 	
-	uint32_t lowRlt = (field_3x6line_lut[ lowLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) ] >> (lowLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X))) & ((1<<BACTERIA_PER_FIELD_X)-1);
 	
-	uint32_t midRlt = (field_3x6line_lut[ midLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) ] >> (midLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X))) & ((1<<BACTERIA_PER_FIELD_X)-1);
+	int idx = lowLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X);
+	int shift = (lowLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X)) * BACTERIA_PER_FIELD_X ;
+	uint32_t lowRlt = (field_3x6line_lut[ idx ] >> shift ) & FIELD_LINE_WIDTH;
 	
-	uint32_t highRlt = (field_3x6line_lut[ highLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) ] >> (highLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X))) & ((1<<BACTERIA_PER_FIELD_X)-1);
+	
+	idx = midLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X);
+	shift = (midLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X)) * BACTERIA_PER_FIELD_X ;
+	uint32_t midRlt = (field_3x6line_lut[ idx ] >> shift ) & FIELD_LINE_WIDTH;
+	
+	idx = highLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X);
+	shift = (highLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X)) * BACTERIA_PER_FIELD_X ;
+	uint32_t highRlt = (field_3x6line_lut[ idx ] >> shift ) & FIELD_LINE_WIDTH;
 	
 	field_t newField;
 	newField.val = (field->val & ~FIELD_ALL_ELEMENTS_MASK) | (highRlt << (3 * FIELD_LINE_WIDTH + 1)) | (midRlt << (2 * FIELD_LINE_WIDTH + 1)) | (lowRlt <<  FIELD_LINE_WIDTH + 1);
@@ -72,7 +80,11 @@ void field_updateWithLut( field_t* field ) {
 
 
 void field_update( field_t* field ) {
+	field_t backup = *field;
 	field_updateWithLut(field);
+	field_updateNeighbourCount(&backup);
+	
+	assert( backup.val == field->val );
 }
 
 

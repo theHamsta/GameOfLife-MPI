@@ -172,7 +172,7 @@ void board_fillRandomly(board_t* board)
 	board_reset(board);
 	
 // 	srand(time(NULL));
-	srand(14);
+	srand(15);
 	
 // 	int memlimit = board_getMemoryUsageData(board) / sizeof(field_t);
 	
