@@ -58,11 +58,18 @@ void field_updateWithLut( field_t* field ) {
 	uint32_t midLutIdx = (field->val >> FIELD_LINE_WIDTH) & FIELD_THREE_LINES_MASK;
 	uint32_t highLutIdx = (field->val >> (2 * FIELD_LINE_WIDTH)) & FIELD_THREE_LINES_MASK;
 	
-	uint32_t lowRlt = (field_3x6line_lut[ lowLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) ] >> (lowLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X))) & ((1<<BACTERIA_PER_FIELD_X)-1);
 	
-	uint32_t midRlt = (field_3x6line_lut[ midLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) ] >> (midLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X))) & ((1<<BACTERIA_PER_FIELD_X)-1);
+	uint32_t idx = lowLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X);
+	uint32_t shift = (lowLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X)) * BACTERIA_PER_FIELD_X;
+	uint32_t lowRlt = (field_3x6line_lut[ idx ] >> shift) & FIELD_LINE_WIDTH_ONES;
 	
-	uint32_t highRlt = (field_3x6line_lut[ highLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) ] >> (highLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X))) & ((1<<BACTERIA_PER_FIELD_X)-1);
+	idx = midLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X);
+	shift = (midLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X)) * BACTERIA_PER_FIELD_X;
+	uint32_t midRlt = (field_3x6line_lut[ idx ] >> shift) & FIELD_LINE_WIDTH_ONES;
+	
+	idx = highLutIdx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X);
+	shift = (highLutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X)) * BACTERIA_PER_FIELD_X;
+	uint32_t highRlt = (field_3x6line_lut[ idx ] >> shift) & FIELD_LINE_WIDTH_ONES;
 	
 	field_t newField;
 	newField.val = (field->val & ~FIELD_ALL_ELEMENTS_MASK) | (highRlt << (3 * FIELD_LINE_WIDTH + 1)) | (midRlt << (2 * FIELD_LINE_WIDTH + 1)) | (lowRlt <<  FIELD_LINE_WIDTH + 1);
@@ -72,7 +79,11 @@ void field_updateWithLut( field_t* field ) {
 
 
 void field_update( field_t* field ) {
+	field_t backup = *field;
 	field_updateWithLut(field);
+	field_updateNeighbourCount(&backup);
+	
+	assert( backup.val == field->val ); 
 }
 
 
@@ -80,21 +91,25 @@ void field_initLuts()
 {
 	uint32_t curResult = 0;
 	for ( unsigned int i = 0; i < FIELD_3X6LINE_LUT_NUM_ENTRIES; i++ ) {
-		for ( unsigned int x = 0; x < BACTERIA_PER_FIELD_X; x++ ) {
-			uint32_t neighbours = (i >>  x) & FIELD_NEIGHBOUR_MASK;
-			uint32_t numNeighbours = popcount(neighbours);
-			
-			bool bWasAlive = (i >> x >> FIELD_LINE_WIDTH) & 1;
-			
-			bool bIsAlive = false;
-			if( numNeighbours == 3 ) {
-				bIsAlive = true;
-			} else if ( bWasAlive && numNeighbours == 2 ) {
-				bIsAlive = true;
-			}
-			
-			curResult |= bIsAlive << ((i % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X)) * BACTERIA_PER_FIELD_X + x);
-		}
+// 		for ( unsigned int x = 0; x < BACTERIA_PER_FIELD_X; x++ ) {
+// 			uint32_t neighbours = (i >>  x) & FIELD_NEIGHBOUR_MASK;
+// 			uint32_t numNeighbours = popcount(neighbours);
+// 			
+// 			bool bWasAlive = (i >> x >> FIELD_LINE_WIDTH) & 1;
+// 			
+// 			bool bIsAlive = false;
+// 			if( numNeighbours == 3 ) {
+// 				bIsAlive = true;
+// 			} else if ( bWasAlive && numNeighbours == 2 ) {
+// 				bIsAlive = true;
+// 			}
+		
+		field_t field;
+		field.val = i;
+		field_updateNeighbourCount(&field);
+		
+		curResult |= ((field.val >> FIELD_ELEMENT_SHIFT_FOR_MASK(1,1)) & FIELD_LINE_WIDTH_ONES) << ((i % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X)) * BACTERIA_PER_FIELD_X);
+// 		}
 		if ( i % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) == (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) - 1 ) {
 			field_3x6line_lut[ i / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X) ] = curResult;
 			curResult = 0;
