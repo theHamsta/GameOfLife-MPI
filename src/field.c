@@ -79,11 +79,11 @@ void field_updateWithLut( field_t* field ) {
 
 
 void field_update( field_t* field ) {
-	field_t backup = *field;
+// 	field_t backup = *field;
 	field_updateWithLut(field);
-	field_updateNeighbourCount(&backup);
+// 	field_updateNeighbourCount(&backup);
 	
-	assert( backup.val == field->val ); 
+// 	assert( backup.val == field->val ); 
 }
 
 

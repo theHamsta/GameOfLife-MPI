@@ -8,10 +8,9 @@
 #include "board.h"
 
 
-
-#define GLOBAL_BOARD_WIDTH 4*20
-#define GLOBAL_BOARD_HEIGHT 3*10
-#define NUM_ROUNDS 200
+#define GLOBAL_BOARD_WIDTH 4*10000
+#define GLOBAL_BOARD_HEIGHT 3*1000
+#define NUM_ROUNDS 100
 #define PERIODIC_BOUNDARY_CONDITIONS true
 
 
@@ -58,32 +57,34 @@ int main(int argc, char** argv) {
 #endif
 
 	field_initLuts();
-	
+// 	
 	board_t* board = board_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT);
-
+// 
  	board_fillRandomly(board);
-	
-	board_print(board);
-	for( int i = 0; ; i++ ) {
-		usleep(100000);  
-		
-		board_step(board);
-		
-		clearScreen();
-		board_print(board);
-		fflush(stdout); 
-	}
-/*	
+// 	
+// 	board_print(board);
+// 	for( int i = 0; ; i++ ) {
+// 		usleep(100000);  
+// 		
+// 		board_step(board);
+// 		
+// 		clearScreen();
+// 		board_print(board);
+// 		fflush(stdout); 
+// 	}
+
 	clock_t start = clock();
 	for( int i = 0; i < NUM_ROUNDS; i++ ) {
 		board_step(board);
+// 		printf("%i\n", i);
+// 		fflush(stdout); 
 	}
 	clock_t end = clock();
 	float seconds = (float)(end - start) / CLOCKS_PER_SEC;
 	
 	printf("%fs\n", seconds);
 	fflush(stdout); 
-	*/
+	
 		
     // Finalize the MPI environment.
 //     MPI_Finalize();
