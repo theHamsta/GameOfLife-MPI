@@ -3,7 +3,9 @@
 
 #include "board.h"
 
-typedef struct global_board_s
+#include <mpi.h>
+
+typedef struct globalBoard_s
 {
 	unsigned int global_width;
 	unsigned int global_height;
@@ -12,17 +14,27 @@ typedef struct global_board_s
 	unsigned int local_x;
 	unsigned int local_y;
 	
-	unsigned int mpi_rank;
+	unsigned int mpi_rankX;
+	unsigned int mpi_rankY;
 	unsigned int mpi_sizeX;
 	unsigned int mpi_sizeY;
 	
-	int mpi_communicator;
+	unsigned int neighbourLeft;
+	unsigned int neighbourRight;
+	unsigned int neighbourUp;
+	unsigned int neighbourDown;
 	
-} global_board_t;
+	MPI_Comm mpi_comm;
+	
+} globalBoard_t;
 
-global_board_t* global_boardCreate( unsigned int width, unsigned int height );
+globalBoard_t* globalBoard_create( unsigned int width, unsigned int height, int rank, int numRanksX, int numRanksY );
 
-void global_board_destroy( global_board_t* board );
+void globalBoard_print( globalBoard_t* board );
+
+void globalBoard_fillRandomly ( globalBoard_t* board );
+
+void globalBoard_destroy( globalBoard_t* board );
 
 
 #endif // GLOBAL_BOARD_H
