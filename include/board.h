@@ -42,8 +42,6 @@ void board_updateFields(board_t* board);
 
 void board_broadcastNeighbourhoods(board_t* board);
 
-// void board_broadcastNeighbourhoodsMpi(board_t* board, field_t* left, field_t* right, field_t* up, field_t* down );
-
 size_t board_getMemoryUsageData(board_t* board);
 
 bool board_value_at( board_t* board, unsigned int x, unsigned int y );

@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 	
 	
 	globalBoard_fillRandomly(gBoard);
-	globalBoard_print(gBoard);
+// 	globalBoard_print(gBoard);
 	
 	for ( int i = 0; i < NUM_ROUNDS; i++ ) {
 		globalBoard_step(gBoard);

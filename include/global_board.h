@@ -41,10 +41,10 @@ typedef struct globalBoard_s
 	MPI_Request* reqSendRight;
 	MPI_Request* reqSendDown;
 	
-	MPI_Request* recvUp;
-	MPI_Request* recvLeft;
-	MPI_Request* recvRight;
-	MPI_Request* recvDown;
+	MPI_Request* reqRecvUp;
+	MPI_Request* reqRecvLeft;
+	MPI_Request* reqRecvRight;
+	MPI_Request* reqRecvDown;
 	
 } globalBoard_t;
 

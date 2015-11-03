@@ -7,34 +7,8 @@
 
 
 
+#include "log.h"
 
-// typedef struct globalBoard_s
-// {
-// 	unsigned int global_width;
-// 	unsigned int global_height;
-// 	
-// 	board_t* local_board;
-// 	unsigned int local_x;
-// 	unsigned int local_y;
-// 	
-// 	unsigned int mpi_rankX;
-// 	unsigned int mpi_rankY;
-// 	unsigned int mpi_sizeX;
-// 	unsigned int mpi_sizeY;
-// 	
-// 	unsigned int neighbourLeft;
-// 	unsigned int neighbourRight;
-// 	unsigned int neighbourUp;
-// 	unsigned int neighbourDown;
-// 	
-// 	MPI_Comm mpi_comm;
-// 	
-// 	field_t* bufLeft;
-// 	field_t* bufRight;
-// 	field_t* bufUp;
-// 	field_t* bufDown;
-// 	
-// } globalBoard_t;
 
 
 #define GBOARD_UP_BUF_SIZE(BOARD) ( 2 * sizeof(field_t) * ((BOARD).width + 2 * BOARD_PADDING_X)) 
@@ -58,6 +32,7 @@ void field_broadcastBottomLeft( field_t* field, field_t* neighbour );
 
 globalBoard_t* globalBoard_create(unsigned int width, unsigned int height, int rank, int numRanksX, int numRanksY )
 {
+	
 	assert( rank < numRanksX * numRanksY );
 	
 	globalBoard_t* global_board = malloc(sizeof(globalBoard_t));
@@ -115,23 +90,33 @@ globalBoard_t* globalBoard_create(unsigned int width, unsigned int height, int r
 	
 	global_board->mpi_comm = comm;
 	
-	global_board->sendBufUp = malloc( 2 * sizeof(field_t) * global_board->global_height );
-	global_board->sendBufRight = malloc( 2 * sizeof(field_t) * global_board->global_height );
-	global_board->sendBufUp = malloc( 2 * sizeof(field_t) * (global_board->global_width + 2 * BOARD_PADDING_X ));
-	global_board->sendBufDown = malloc( 2 * sizeof(field_t) * (global_board->global_width + 2 * BOARD_PADDING_X ));
+	global_board->sendBufLeft = malloc( GBOARD_LEFT_BUF_SIZE(*global_board->local_board) );
+	global_board->sendBufRight = malloc( GBOARD_RIGHT_BUF_SIZE(*global_board->local_board)  );
+	global_board->sendBufUp = malloc( GBOARD_UP_BUF_SIZE(*global_board->local_board) );
+	global_board->sendBufDown = malloc( GBOARD_DOWN_BUF_SIZE(*global_board->local_board) );
 	
-	global_board->recvBufUp = malloc( 2 * sizeof(field_t) * global_board->global_height );
-	global_board->recvBufRight = malloc( 2 * sizeof(field_t) * global_board->global_height );
-	global_board->recvBufUp = malloc( 2 * sizeof(field_t) * (global_board->global_width + 2 * BOARD_PADDING_X ));
-	global_board->recvBufDown = malloc( 2 * sizeof(field_t) * (global_board->global_width + 2 * BOARD_PADDING_X ));
+	global_board->recvBufLeft = malloc( GBOARD_LEFT_BUF_SIZE(*global_board->local_board) );
+	global_board->recvBufRight = malloc( GBOARD_RIGHT_BUF_SIZE(*global_board->local_board)  );
+	global_board->recvBufUp = malloc( GBOARD_UP_BUF_SIZE(*global_board->local_board) );
+	global_board->recvBufDown = malloc( GBOARD_DOWN_BUF_SIZE(*global_board->local_board) );
 	
 	assert(global_board);
 
+	MPI_Request* reqPool = malloc( 8 * sizeof(MPI_Request));
+	global_board->reqRecvUp = reqPool + 0;
+	global_board->reqRecvDown = reqPool + 1;
+	global_board->reqRecvLeft = reqPool + 2;
+	global_board->reqRecvRight = reqPool + 3;
+	global_board->reqSendUp = reqPool + 4;
+	global_board->reqSendDown = reqPool + 5;
+	global_board->reqSendLeft = reqPool + 6;
+	global_board->reqSendRight = reqPool + 7;
 	
 }
 
 void globalBoard_fillRandomly(globalBoard_t* board)
 {
+	_log("Enter globalBoard_fillRandomly");
 	MPI_Barrier(board->mpi_comm);
 	for ( int y = 0; y < board->mpi_sizeY; y++ ) {
 		for ( int x = 0; x < board->mpi_sizeX; x++ ) {
@@ -146,7 +131,7 @@ void globalBoard_fillRandomly(globalBoard_t* board)
 
 void globalBoard_print(globalBoard_t* board)
 {
-	
+	_log("Enter globalBoard_print");
 	MPI_Barrier(board->mpi_comm);
 	
 	
@@ -170,6 +155,8 @@ void globalBoard_print(globalBoard_t* board)
 
 void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 {
+	_log("Enter globalBoard_sendNeighbours");
+
 	field_t* up = globalBoard->sendBufUp;
 	field_t* down = globalBoard->sendBufDown;
 	field_t* left = globalBoard->sendBufLeft;
@@ -197,6 +184,7 @@ void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 			up++;
 		}
 	}
+
 	
 	for ( int x = 0; x < board->width; x++) {
 		field_t cur = board->data[ BOARD_PADDING_X + x + (BOARD_PADDING_Y + board->height) * (board->width + 2 * BOARD_PADDING_X) ];
@@ -233,6 +221,7 @@ void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 		}
 	}
 
+	
 	tmp.val = (uint32_t) -1;
 	origUp[1] = tmp; // will be recasted to int again
 	field_broadcastTopLeft(board->data + 0, origUp + 2);
@@ -249,6 +238,8 @@ void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 	field_broadcastBottomRight(&board->data[ BOARD_PADDING_X + board->width + BOARD_LINE_SKIP(*board) * (board->height + BOARD_PADDING_Y) ], down);
 	down++;
 	
+	
+	
 	tmp.val = left - origLeft;
 	origLeft[0] = tmp;
 	tmp.val = right - origRight;
@@ -258,31 +249,45 @@ void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 	tmp.val = down - origDown;
 	origDown[0] = tmp;
 	
+
 	
-	MPI_Isend((void*) origLeft, 2 * sizeof(field_t) * (board->width + 2 * BOARD_PADDING_X), MPI_INT, globalBoard->neighbourLeft, 0, globalBoard->mpi_comm, globalBoard->reqSendLeft);
+		
 	
-	MPI_Isend((void*) origRight, 2 * sizeof(field_t) * (board->width + 2 * BOARD_PADDING_X), MPI_INT, globalBoard->neighbourRight, 0, globalBoard->mpi_comm, globalBoard->reqSendRight);
+	MPI_Isend((void*) origLeft, GBOARD_LEFT_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourLeft, 0, globalBoard->mpi_comm, globalBoard->reqSendLeft);
 	
-	MPI_Isend((void*) origUp, 2 * sizeof(field_t) * board->height, MPI_INT, globalBoard->neighbourUp, 0, globalBoard->mpi_comm, globalBoard->reqSendUp);
+	MPI_Isend((void*) origRight, GBOARD_RIGHT_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourRight, 0, globalBoard->mpi_comm, globalBoard->reqSendRight);
 	
-	MPI_Isend((void*) origDown, 2 * sizeof(field_t) * board->width, MPI_INT, globalBoard->neighbourDown, 0, globalBoard->mpi_comm, globalBoard->reqSendDown);
+	MPI_Isend((void*) origUp, GBOARD_UP_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourUp, 0, globalBoard->mpi_comm, globalBoard->reqSendUp);
+	
+	MPI_Isend((void*) origDown, GBOARD_DOWN_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourDown, 0, globalBoard->mpi_comm, globalBoard->reqSendDown);
+	
+	_log("Exit globalBoard_sendNeighbours");
 }
 
 void globalBoard_recvNeighbours( globalBoard_t* board )
 {
-	MPI_Irecv((void*) board->recvBufUp, GBOARD_UP_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourDown, 0, board->mpi_comm, board->recvUp);
-	MPI_Irecv((void*) board->recvBufDown, GBOARD_DOWN_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourUp, 0, board->mpi_comm, board->recvDown);
-	MPI_Irecv((void*) board->recvBufLeft, GBOARD_LEFT_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourRight, 0, board->mpi_comm, board->recvLeft);
-	MPI_Irecv((void*) board->recvBufRight, GBOARD_RIGHT_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourLeft, 0, board->mpi_comm, board->recvRight);
+	_log("Enter globalBoard_recvNeighbours");
+	
+	*board->reqRecvUp = 0;
+	*board->reqRecvDown = 0;
+	*board->reqRecvLeft = 0;
+	*board->reqRecvRight = 0; 
+
+	MPI_Irecv((void*) board->recvBufUp, GBOARD_UP_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourDown, 0, board->mpi_comm, board->reqRecvUp);
+	MPI_Irecv((void*) board->recvBufDown, GBOARD_DOWN_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourUp, 0, board->mpi_comm, board->reqRecvDown);
+	MPI_Irecv((void*) board->recvBufLeft, GBOARD_LEFT_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourRight, 0, board->mpi_comm, board->reqRecvLeft);
+	MPI_Irecv((void*) board->recvBufRight, GBOARD_RIGHT_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourLeft, 0, board->mpi_comm, board->reqSendRight);
 }
 
 void globalBoard_processRecv( globalBoard_t* board ) {
-	
+	_log("Enter globalBoard_processRecv");
 }
 
 
 void globalBoard_step(globalBoard_t* board)
 {
+	_log("Enter globalBoard_step");
+	
 	globalBoard_sendNeighbours(board);
 	globalBoard_recvNeighbours(board);
 	board_broadcastNeighbourhoods(board->local_board);
@@ -296,6 +301,17 @@ void globalBoard_step(globalBoard_t* board)
 void globalBoard_destroy(globalBoard_t* board)
 {
 	board_destroy(board->local_board);
+	
+	free(board->recvBufDown);
+	free(board->recvBufUp);
+	free(board->recvBufLeft);
+	free(board->recvBufRight);
+	
+	free(board->sendBufDown);
+	free(board->sendBufUp);
+	free(board->sendBufLeft);
+	free(board->sendBufRight);
+	
 	free(board);
 }
 
