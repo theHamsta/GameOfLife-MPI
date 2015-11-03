@@ -38,6 +38,10 @@ void board_destroy(board_t* board);
 
 void board_step(board_t* board);
 
+void board_updateFields(board_t* board);
+
+void board_broadcastNeighbourhoods(board_t* board);
+
 size_t board_getMemoryUsageData(board_t* board);
 
 bool board_value_at( board_t* board, unsigned int x, unsigned int y );

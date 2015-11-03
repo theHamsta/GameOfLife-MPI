@@ -112,8 +112,7 @@ bool board_value_at(board_t* board, unsigned int x, unsigned int y)
 
 
 
-
-void board_step( board_t* board )
+void board_broadcastNeighbourhoods(board_t* board)
 {
 	field_t* above = board->data + BOARD_PADDING_X;
 	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
@@ -147,9 +146,11 @@ void board_step( board_t* board )
 		current += 2 * BOARD_PADDING_X;
 		below += 2 * BOARD_PADDING_X;
 	}
-	
-// 	board_printDebug(board);
-	current = BOARD_PTR_FIRST_FIELD(*board);
+}
+
+void board_updateFields(board_t* board)
+{
+	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
 	
 	
 	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
@@ -162,10 +163,9 @@ void board_step( board_t* board )
 		}
 		current += 2 * BOARD_PADDING_X;
 	}
-	
-	
-	
 }
+
+
 
 void board_fillRandomly(board_t* board)
 {
