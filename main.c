@@ -10,7 +10,7 @@
 
 
 #define GLOBAL_BOARD_WIDTH 4*2
-#define GLOBAL_BOARD_HEIGHT 3*1
+#define GLOBAL_BOARD_HEIGHT 3*2
 #define NUM_ROUNDS 100
 #define PERIODIC_BOUNDARY_CONDITIONS true
 
@@ -25,31 +25,37 @@ void waitFor (time_t secs) {
 }
 
 int main(int argc, char** argv) {
-// 	printf("Warning! Debug mode\n");
-// 	fflush(stdout);
-// 	
-//     // Initialize the MPI environment
-//     MPI_Init(NULL, NULL);
-// 
-//     // Get the number of processes
-//     int world_size;
-//     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-// 
-//     // Get the rank of the process
-//     int world_rank;
-//     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-// 
-// 
-// 	fflush(stdout);
-// 	
-// // 	srand(time(NULL) + world_rank);
-// 	srand(12 + world_rank);
-// 	globalBoard_t* gBoard = globalBoard_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT, world_rank, 2, 1);
-// 	fflush(stdout);
-// 	
-// 	
-// 	globalBoard_fillRandomly(gBoard);
-// 	globalBoard_print(gBoard);
+	printf("Warning! Debug mode\n");
+	fflush(stdout);
+	
+    // Initialize the MPI environment
+    MPI_Init(NULL, NULL);
+
+    // Get the number of processes
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    // Get the rank of the process
+    int world_rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	
+	
+	field_initLuts();
+
+	
+// 	srand(time(NULL) + world_rank);
+	srand(12 + world_rank);
+	globalBoard_t* gBoard = globalBoard_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT, world_rank, 2, 2);
+	fflush(stdout);
+	
+	
+	globalBoard_fillRandomly(gBoard);
+	globalBoard_print(gBoard);
+	
+	for ( int i = 0; i < NUM_ROUNDS; i++ ) {
+		globalBoard_step(gBoard);
+		
+	}
 
 	
 
@@ -59,22 +65,22 @@ int main(int argc, char** argv) {
 
 	
 	
-	field_initLuts();
+// 	field_initLuts();
+// // 	
+// 	board_t* board = board_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT);
+// // 
+//  	board_fillRandomly(board);
 // 	
-	board_t* board = board_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT);
-// 
- 	board_fillRandomly(board);
-	
-	board_print(board);
-	for( int i = 0; ; i++ ) {
-		usleep(100000);  
-		
-		board_broadcastNeighbourhoods(board);
-		board_updateFields(board);
-		clearScreen();
-		board_print(board);
-		fflush(stdout); 
-	}
+// 	board_print(board);
+// 	for( int i = 0; ; i++ ) {
+// 		usleep(100000);  
+// 		
+// 		board_broadcastNeighbourhoods(board);
+// 		board_updateFields(board);
+// 		clearScreen();
+// 		board_print(board);
+// 		fflush(stdout); 
+// 	}
 
 // 	clock_t start = clock();
 // 	for( int i = 0; i < NUM_ROUNDS; i++ ) {

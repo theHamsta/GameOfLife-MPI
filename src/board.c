@@ -111,6 +111,13 @@ bool board_value_at(board_t* board, unsigned int x, unsigned int y)
 }*/
 
 
+void board_broadcastNeighbourhoodsMpi(board_t* board, uint32_t* left, uint32_t* right, uint32_t* up, uint32_t* down)
+{
+	
+}
+
+
+
 
 void board_broadcastNeighbourhoods(board_t* board)
 {
@@ -145,7 +152,7 @@ void board_broadcastNeighbourhoods(board_t* board)
 		above += 2 * BOARD_PADDING_X;
 		current += 2 * BOARD_PADDING_X;
 		below += 2 * BOARD_PADDING_X;
-	}
+	}	
 }
 
 void board_updateFields(board_t* board)

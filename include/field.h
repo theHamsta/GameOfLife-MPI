@@ -133,7 +133,7 @@ void field_printDebugAllLines( field_t* field );
 // bool field_has_changed ( field_t* field );
 
 
-void inline field_broadcastLeft( field_t* field, field_t* neighbour )
+void static inline field_broadcastLeft( field_t* field, field_t* neighbour )
 {
 	// clear right area of neighbour
 	neighbour->val &= UINT32_MAX & ~FIELD_ALL_NEIGHBOURS_RIGHT_MASK;
@@ -143,7 +143,7 @@ void inline field_broadcastLeft( field_t* field, field_t* neighbour )
 	neighbour->val |= val;	
 }
 
-void inline field_broadcastTopLeft( field_t* field, field_t* neighbour )
+void static inline field_broadcastTopLeft( field_t* field, field_t* neighbour )
 {
 	// clear right area of neighbour
 	neighbour->val &= UINT32_MAX & ~FIELD_ALL_NEIGHBOURS_BOTTOM_RIGHT_MASK;
@@ -154,7 +154,7 @@ void inline field_broadcastTopLeft( field_t* field, field_t* neighbour )
 }
 
 
-void inline field_broadcastTop( field_t* field, field_t* neighbour )
+void static inline field_broadcastTop( field_t* field, field_t* neighbour )
 {
 	// clear right area of neighbour
 	neighbour->val &= UINT32_MAX & ~FIELD_ALL_NEIGHBOURS_BOTTOM_MASK;
@@ -164,7 +164,7 @@ void inline field_broadcastTop( field_t* field, field_t* neighbour )
 	neighbour->val |= val;	
 }
 
-void inline field_broadcastTopRight( field_t* field, field_t* neighbour )
+void static inline field_broadcastTopRight( field_t* field, field_t* neighbour )
 {
 	// clear right area of neighbour
 	neighbour->val &= UINT32_MAX & ~FIELD_ALL_NEIGHBOURS_BOTTOM_LEFT_MASK;
@@ -174,7 +174,7 @@ void inline field_broadcastTopRight( field_t* field, field_t* neighbour )
 	neighbour->val |= val;	
 }
 
-void inline field_broadcastRight( field_t* field, field_t* neighbour )
+void static inline field_broadcastRight( field_t* field, field_t* neighbour )
 {
 	// clear right area of neighbour
 	neighbour->val &= UINT32_MAX & ~FIELD_ALL_NEIGHBOURS_LEFT_MASK;
@@ -184,7 +184,7 @@ void inline field_broadcastRight( field_t* field, field_t* neighbour )
 	neighbour->val |= val;	
 }
 
-void inline field_broadcastBottomRight( field_t* field, field_t* neighbour )
+void static inline field_broadcastBottomRight( field_t* field, field_t* neighbour )
 {
 	// clear right area of neighbour
 	neighbour->val &= UINT32_MAX & ~FIELD_ALL_NEIGHBOURS_TOP_LEFT_MASK;
@@ -194,7 +194,7 @@ void inline field_broadcastBottomRight( field_t* field, field_t* neighbour )
 	neighbour->val |= val;	
 }
 
-void inline field_broadcastBottom( field_t* field, field_t* neighbour )
+void static inline field_broadcastBottom( field_t* field, field_t* neighbour )
 {
 	// clear right area of neighbour
 	neighbour->val &= UINT32_MAX & ~FIELD_ALL_NEIGHBOURS_TOP_MASK;
@@ -205,7 +205,7 @@ void inline field_broadcastBottom( field_t* field, field_t* neighbour )
 	neighbour->val |= val;	
 }
 
-void inline field_broadcastBottomLeft( field_t* field, field_t* neighbour )
+void static inline field_broadcastBottomLeft( field_t* field, field_t* neighbour )
 {
 	// clear right area of neighbour
 	neighbour->val &= UINT32_MAX & ~FIELD_ALL_NEIGHBOURS_TOP_RIGHT_MASK;

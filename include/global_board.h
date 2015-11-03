@@ -26,6 +26,26 @@ typedef struct globalBoard_s
 	
 	MPI_Comm mpi_comm;
 	
+	field_t* sendBufLeft;
+	field_t* sendBufRight;
+	field_t* sendBufUp;
+	field_t* sendBufDown;
+
+	field_t* recvBufLeft;
+	field_t* recvBufRight;
+	field_t* recvBufUp;
+	field_t* recvBufDown;
+	
+	MPI_Request* reqSendUp;
+	MPI_Request* reqSendLeft;
+	MPI_Request* reqSendRight;
+	MPI_Request* reqSendDown;
+	
+	MPI_Request* recvUp;
+	MPI_Request* recvLeft;
+	MPI_Request* recvRight;
+	MPI_Request* recvDown;
+	
 } globalBoard_t;
 
 globalBoard_t* globalBoard_create( unsigned int width, unsigned int height, int rank, int numRanksX, int numRanksY );
@@ -33,6 +53,8 @@ globalBoard_t* globalBoard_create( unsigned int width, unsigned int height, int 
 void globalBoard_print( globalBoard_t* board );
 
 void globalBoard_fillRandomly ( globalBoard_t* board );
+
+void globalBoard_step ( globalBoard_t* board );
 
 void globalBoard_destroy( globalBoard_t* board );
 
