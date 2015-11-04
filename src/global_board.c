@@ -11,9 +11,9 @@
 
 
 
-#define GBOARD_UP_BUF_SIZE(BOARD) ( 2 * sizeof(field_t) * ((BOARD).width + 2 * BOARD_PADDING_X)) 
+#define GBOARD_UP_BUF_SIZE(BOARD) ( 2 * sizeof(field_t) * ((BOARD).width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)) 
 #define GBOARD_DOWN_BUF_SIZE(BOARD) GBOARD_UP_BUF_SIZE(BOARD)
-#define GBOARD_LEFT_BUF_SIZE(BOARD) ( 2 * sizeof(field_t) * (BOARD).height)
+#define GBOARD_LEFT_BUF_SIZE(BOARD) ( 2 * sizeof(field_t) * (BOARD).height / BACTERIA_PER_FIELD_Y)
 #define GBOARD_RIGHT_BUF_SIZE(BOARD) GBOARD_LEFT_BUF_SIZE(BOARD)
 
 #define BEGIN_MASTER_ONLY_SECTION(GLOBAL_BOARD) if ((GLOBAL_BOARD).mpi_rank == 0) {
