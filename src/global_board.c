@@ -131,26 +131,11 @@ void globalBoard_fillRandomly(globalBoard_t* board)
 
 void globalBoard_print(globalBoard_t* board)
 {
-	
-	MPI_Barrier(board->mpi_comm);
-	
-	
-	for ( int y = 0; y < board->mpi_sizeY; y++ ) {
-		for ( int x = 0; x < board->mpi_sizeX; x++ ) {
-			if ( board->mpi_rankX == x && board->mpi_rankY == y ) {
-				
-				board_print(board->local_board);
-				fflush(stdout);
-				usleep(1000000);
-			}
-			MPI_Barrier(MPI_COMM_WORLD);
-		}
-		MPI_Barrier(MPI_COMM_WORLD);
-		BEGIN_MASTER_ONLY_SECTION(*board)
-			printf("===================\n");
-			fflush(stdout);
-		END_MASTER_ONLY_SECTION
-	}
+	BEGIN_MASTER_ONLY_SECTION(*board)
+		board_t* bigLocalBoard = globalBoard_uniteLocalBoards(board);
+		board_print(bigLocalBoard);
+		globalBoard_destroy(bigLocalBoard);
+	END_MASTER_ONLY_SECTION
 }
 
 void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
