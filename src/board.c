@@ -182,7 +182,7 @@ void board_fillRandomly(board_t* board)
 	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
 		for ( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD_X; x++ ) {
 			int rnd = rand();
-// 			current->val |= FIELD_ALL_ELEMENTS_MASK;
+			current->val |= FIELD_ALL_ELEMENTS_MASK;
 			current->val |= rnd & FIELD_ALL_ELEMENTS_MASK;
 			
 			field_broadcastLeft			(current, current -1);
@@ -213,8 +213,10 @@ bool board_value_at(board_t* board, unsigned int x, unsigned int y)
 
 void board_step(board_t* board)
 {
-	board_broadcastNeighbourhoods(board);
+	
 	board_updateFields(board);
+	board_broadcastNeighbourhoods(board);
+	
 }
 
 
