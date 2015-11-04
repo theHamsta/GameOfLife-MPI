@@ -23,6 +23,9 @@
 #define GBOARD_RIGHT_BUF_ELEMENTS(BOARD) GBOARD_LEFT_BUF_ELEMENTS(BOARD)
 
 
+typedef enum messageDirection_e{
+	DIRECTION_UP, DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_RIGHT
+} messageDirection_t;
 
 void field_broadcastLeft( field_t* field, field_t* neighbour );
 void field_broadcastTopLeft( field_t* field, field_t* neighbour );
@@ -48,7 +51,7 @@ globalBoard_t* globalBoard_create(unsigned int width, unsigned int height,  int 
 	int reorder = true;
 	int coords[2];
 	
-	
+
 	assert( dims [0] > 1 );
 	assert( dims [1] > 1 );
 	
@@ -236,11 +239,11 @@ void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 	
 		
 
-	
 
-	MPI_Isend((void*) &globalBoard->local_board->data[BOARD_PADDING_X], GBOARD_UP_BUF_ELEMENTS(*globalBoard->local_board), MPI_INT, globalBoard->neighbourUp, 0, globalBoard->mpi_comm, globalBoard->reqSendUp);
+
+	MPI_Isend((void*) &globalBoard->local_board->data[BOARD_PADDING_X], GBOARD_UP_BUF_ELEMENTS(*globalBoard->local_board), MPI_INT, globalBoard->neighbourUp, DIRECTION_UP, globalBoard->mpi_comm, globalBoard->reqSendUp);
 	
-	MPI_Isend((void*) &globalBoard->local_board->data[BOARD_PADDING_X + (globalBoard->local_board->height / BACTERIA_PER_FIELD_Y +BOARD_PADDING_Y)*BOARD_LINE_SKIP(*globalBoard->local_board)], GBOARD_DOWN_BUF_ELEMENTS(*globalBoard->local_board), MPI_INT, globalBoard->neighbourDown, 0, globalBoard->mpi_comm, globalBoard->reqSendDown);
+	MPI_Isend((void*) &globalBoard->local_board->data[BOARD_PADDING_X + (globalBoard->local_board->height / BACTERIA_PER_FIELD_Y +BOARD_PADDING_Y)*BOARD_LINE_SKIP(*globalBoard->local_board)], GBOARD_DOWN_BUF_ELEMENTS(*globalBoard->local_board), MPI_INT, globalBoard->neighbourDown, DIRECTION_DOWN, globalBoard->mpi_comm, globalBoard->reqSendDown);
 	
 	for ( int y = 0; y < GBOARD_LEFT_BUF_ELEMENTS(*globalBoard->local_board); y++ ) {
 		globalBoard->sendBufLeft[y].val = globalBoard->local_board->data[ (y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*globalBoard->local_board) ].val;
@@ -248,9 +251,9 @@ void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 
 	}
 	
-	MPI_Isend((void*) globalBoard->sendBufLeft, GBOARD_LEFT_BUF_ELEMENTS(*globalBoard->local_board), MPI_INT, globalBoard->neighbourLeft, 0, globalBoard->mpi_comm, globalBoard->reqSendLeft);
+	MPI_Isend((void*) globalBoard->sendBufLeft, GBOARD_LEFT_BUF_ELEMENTS(*globalBoard->local_board), MPI_INT, globalBoard->neighbourLeft, DIRECTION_LEFT, globalBoard->mpi_comm, globalBoard->reqSendLeft);
 	
-	MPI_Isend((void*) globalBoard->sendBufRight, GBOARD_RIGHT_BUF_ELEMENTS(*globalBoard->local_board), MPI_INT, globalBoard->neighbourRight, 0, globalBoard->mpi_comm, globalBoard->reqSendRight);
+	MPI_Isend((void*) globalBoard->sendBufRight, GBOARD_RIGHT_BUF_ELEMENTS(*globalBoard->local_board), MPI_INT, globalBoard->neighbourRight, DIRECTION_RIGHT, globalBoard->mpi_comm, globalBoard->reqSendRight);
 	
 
 	
@@ -271,10 +274,10 @@ void globalBoard_recvNeighbours( globalBoard_t* board )
 	
 
 
-	MPI_Irecv((void*) board->recvBufUp, GBOARD_UP_BUF_ELEMENTS(*board->local_board), MPI_INT, board->neighbourUp, 0, board->mpi_comm, board->reqRecvUp);
-	MPI_Irecv((void*) board->recvBufDown, GBOARD_DOWN_BUF_ELEMENTS(*board->local_board), MPI_INT, board->neighbourDown, 0, board->mpi_comm, board->reqRecvDown);
-	MPI_Irecv((void*) board->recvBufLeft, GBOARD_LEFT_BUF_ELEMENTS(*board->local_board), MPI_INT, board->neighbourLeft, 0, board->mpi_comm, board->reqRecvLeft);
-	MPI_Irecv((void*) board->recvBufRight, GBOARD_RIGHT_BUF_ELEMENTS(*board->local_board), MPI_INT, board->neighbourRight, 0, board->mpi_comm, board->reqRecvRight);
+	MPI_Irecv((void*) board->recvBufUp, GBOARD_UP_BUF_ELEMENTS(*board->local_board), MPI_INT, board->neighbourUp, DIRECTION_DOWN, board->mpi_comm, board->reqRecvUp);
+	MPI_Irecv((void*) board->recvBufDown, GBOARD_DOWN_BUF_ELEMENTS(*board->local_board), MPI_INT, board->neighbourDown, DIRECTION_UP, board->mpi_comm, board->reqRecvDown);
+	MPI_Irecv((void*) board->recvBufLeft, GBOARD_LEFT_BUF_ELEMENTS(*board->local_board), MPI_INT, board->neighbourLeft, DIRECTION_RIGHT, board->mpi_comm, board->reqRecvLeft);
+	MPI_Irecv((void*) board->recvBufRight, GBOARD_RIGHT_BUF_ELEMENTS(*board->local_board), MPI_INT, board->neighbourRight, DIRECTION_LEFT, board->mpi_comm, board->reqRecvRight);
 }
 
 void globalBoard_processRecv( globalBoard_t* board ) {
@@ -453,6 +456,7 @@ void globalBoard_fillRandomly(globalBoard_t* board)
 	
 	
 	board_fillRandomly(board->local_board);
+
 
 	
 	MPI_Barrier(board->mpi_comm);

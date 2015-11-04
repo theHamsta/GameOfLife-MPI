@@ -9,10 +9,11 @@
 #include "global_board.h"
 
 
-#define GLOBAL_BOARD_WIDTH 4*6
-#define GLOBAL_BOARD_HEIGHT 3*4
+#define GLOBAL_BOARD_WIDTH 4*8
+#define GLOBAL_BOARD_HEIGHT 3*18
 #define NUM_ROUNDS 100
 #define PERIODIC_BOUNDARY_CONDITIONS true
+
 
 
 void clearScreen() {
@@ -42,39 +43,32 @@ int main(int argc, char** argv) {
 	
 	field_initLuts();
 
-// 	field_t foo;
-// 	foo.val = (FIELD_ALL_NEIGHBOURS_TOP_MASK  | FIELD_ALL_NEIGHBOURS_TOP_RIGHT_MASK);;
-// 	field_printDebugAllLines(&foo);
-// 	srand(time(NULL) + world_rank);
+
 	srand(12 + world_rank);
-	globalBoard_t* gBoard = globalBoard_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT,  world_rank, 3,2);
+	globalBoard_t* gBoard = globalBoard_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT,  world_rank, 2,2);
 	
-// 		printf("I'm process %i (%i,%i). left %i, right %i, up %i, down %i\n", gBoard->mpi_rank, gBoard->mpi_rankX, gBoard->mpi_rankY,
-// 		gBoard->neighbourLeft, gBoard->neighbourRight, gBoard->neighbourUp, gBoard->neighbourDown
-// 	);
-	fflush(stdout);
 	globalBoard_fillRandomly(gBoard);
 	
 	board_t* lBoard = globalBoard_uniteLocalBoards(gBoard);
-	globalBoard_printDebug(gBoard);
+// 	globalBoard_printDebug(gBoard);
 	
-	
+
 
 	
 	BEGIN_MASTER_ONLY_SECTION(*gBoard)
 	
 // 		board_printDebug(lBoard);
 	END_MASTER_ONLY_SECTION
-// 	for ( int i = 0; i < 100; i++ ) {
-// 		clearScreen();
-// 		globalBoard_step(gBoard);
-// 		globalBoard_print(gBoard);
-// 		usleep(100000);  
-// // 		BEGIN_MASTER_ONLY_SECTION(*gBoard)
-// // 			board_step(lBoard);
-// // 			board_printDebug(lBoard);
-// // 		END_MASTER_ONLY_SECTION
-// 	}
+	for ( int i = 0; i < 100; i++ ) {
+		clearScreen();
+		globalBoard_step(gBoard);
+		globalBoard_print(gBoard);
+		usleep(100000);  
+// 		BEGIN_MASTER_ONLY_SECTION(*gBoard)
+// 			board_step(lBoard);
+// 			board_printDebug(lBoard);
+// 		END_MASTER_ONLY_SECTION
+	}
 
 	
 

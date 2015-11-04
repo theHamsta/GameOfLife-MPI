@@ -165,15 +165,60 @@ void board_updateFields(board_t* board)
 	}
 }
 
+void board_updateInnerFields(board_t* board)
+{
+
+	
+	
+	for ( unsigned int y = 1; y < board->height / BACTERIA_PER_FIELD_Y - 1; y++ ) {
+		for( unsigned int x = 1; x < board->width / BACTERIA_PER_FIELD_X - 1; x++ ) {
+			
+			field_t *cur = &board->data[ x + BOARD_PADDING_X + (y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board)];
+			
+			if(cur->val != 0) {
+				field_update(cur);
+			}
+		}
+	}
+}
+
+void board_updateOuterFields(board_t* board)
+{
+	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
+	
+	for ( int x = 1; x < board->width / BACTERIA_PER_FIELD_X - 1; x++ ) {
+		field_t* curTop = &board->data[ BOARD_PADDING_X + x + 0 * BOARD_LINE_SKIP(*board) ];
+		field_t* curBottom = &board->data[ BOARD_PADDING_X + x + board->height / BACTERIA_PER_FIELD_Y * BOARD_LINE_SKIP(*board)   ];
+		
+		if(curTop->val){
+			field_update(curTop);
+		}
+		if(curBottom->val){
+			field_update(curBottom);
+		}
+	}
+	
+	
+	for ( int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
+		field_t* curLeft = &board->data[ BOARD_PADDING_Y + (y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board) ];
+		field_t* curRight = &board->data[ board->width + (y  + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board)  ];
+		
+		if(curLeft->val){
+			field_update(curLeft);
+		}
+		if(curRight->val){
+			field_update(curRight);
+		}
+	}
+}
+
+
 
 
 void board_fillRandomly(board_t* board)
 {
 	board_reset(board);
 
-// 	srand(14);
-	
-// 	int memlimit = board_getMemoryUsageData(board) / sizeof(field_t);
 	
 	field_t* above = board->data + BOARD_PADDING_X;
 	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
@@ -182,7 +227,7 @@ void board_fillRandomly(board_t* board)
 	for ( unsigned int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
 		for ( unsigned int x = 0; x < board->width / BACTERIA_PER_FIELD_X; x++ ) {
 			int rnd = rand();
-			current->val |= FIELD_ALL_ELEMENTS_MASK;
+
 			current->val |= rnd & FIELD_ALL_ELEMENTS_MASK;
 			
 			field_broadcastLeft			(current, current -1);
