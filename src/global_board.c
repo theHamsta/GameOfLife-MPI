@@ -134,7 +134,7 @@ void globalBoard_print(globalBoard_t* board)
 	BEGIN_MASTER_ONLY_SECTION(*board)
 		board_t* bigLocalBoard = globalBoard_uniteLocalBoards(board);
 		board_print(bigLocalBoard);
-		globalBoard_destroy(bigLocalBoard);
+		board_destroy(bigLocalBoard);
 	END_MASTER_ONLY_SECTION
 }
 
