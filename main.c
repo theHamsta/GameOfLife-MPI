@@ -52,19 +52,19 @@ int main(int argc, char** argv) {
 	globalBoard_fillRandomly(gBoard);
 	
 	board_t* lBoard = globalBoard_uniteLocalBoards(gBoard);
+	board_broadcastNeighbourhoods(lBoard);
+// 	globalBoard_print(gBoard);
 	
-	globalBoard_print(gBoard);
-	
-	BEGIN_MASTER_ONLY_SECTION(*gBoard)
-		board_print(lBoard);
-	END_MASTER_ONLY_SECTION
+// 	BEGIN_MASTER_ONLY_SECTION(*gBoard)
+// 		board_printDebug(lBoard);
+// 	END_MASTER_ONLY_SECTION
 	for ( int i = 0; i < 2; i++ ) {
 		globalBoard_step(gBoard);
 		globalBoard_printDebug(gBoard);
 		
 		BEGIN_MASTER_ONLY_SECTION(*gBoard)
-			board_step(lBoard);
-			board_print(lBoard);
+// 			board_step(lBoard);
+			board_printDebug(lBoard);
 		END_MASTER_ONLY_SECTION
 	}
 
