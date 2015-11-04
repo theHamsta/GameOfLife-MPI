@@ -42,7 +42,9 @@ int main(int argc, char** argv) {
 	
 	field_initLuts();
 
-	
+	field_t foo;
+	foo.val = 0x8849e;
+	field_printDebugAllLines(&foo);
 // 	srand(time(NULL) + world_rank);
 	srand(12 + world_rank);
 	globalBoard_t* gBoard = globalBoard_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT, world_rank, 2, 2);

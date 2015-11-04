@@ -246,7 +246,7 @@ void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 
 	MPI_Isend((void*) &globalBoard->local_board->data[BOARD_PADDING_X], GBOARD_UP_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourUp, 0, globalBoard->mpi_comm, globalBoard->reqSendUp);
 	
-	MPI_Isend((void*) &globalBoard->local_board->data[BOARD_PADDING_X + (globalBoard->local_board->height / BACTERIA_PER_FIELD_Y +BOARD_PADDING_X)*BOARD_LINE_SKIP(*globalBoard->local_board)], GBOARD_DOWN_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourDown, 0, globalBoard->mpi_comm, globalBoard->reqSendDown);
+	MPI_Isend((void*) &globalBoard->local_board->data[BOARD_PADDING_X + (globalBoard->local_board->height / BACTERIA_PER_FIELD_Y +BOARD_PADDING_Y)*BOARD_LINE_SKIP(*globalBoard->local_board)], GBOARD_DOWN_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourDown, 0, globalBoard->mpi_comm, globalBoard->reqSendDown);
 	
 	for ( int y = 0; y < GBOARD_LEFT_BUF_ELEMENTS(*globalBoard->local_board); y++ ) {
 		globalBoard->sendBufLeft[y].val = globalBoard->local_board->data[ (y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*globalBoard->local_board) ].val;
@@ -293,21 +293,25 @@ void globalBoard_processRecv( globalBoard_t* board ) {
 	
 	board_t* b = board->local_board;
 	for( int x = 0; x < GBOARD_UP_BUF_ELEMENTS(*b); x++ ) {
-		b->data[x + BOARD_PADDING_X + BOARD_LINE_SKIP(*b) * BOARD_PADDING_Y].val &= ~FIELD_ALL_NEIGHBOURS_TOP_MASK;
-		b->data[x + BOARD_PADDING_X + BOARD_LINE_SKIP(*b) * BOARD_PADDING_Y].val |= board->recvBufUp[x].val;
+		b->data[x + BOARD_PADDING_X + BOARD_LINE_SKIP(*b) * BOARD_PADDING_Y].val &= ~FIELD_ALL_NEIGHBOURS_BOTTOM_MASK;
+		b->data[x + BOARD_PADDING_X + BOARD_LINE_SKIP(*b) * BOARD_PADDING_Y].val |= board->recvBufUp[x].val & FIELD_ALL_NEIGHBOURS_BOTTOM_MASK;
+		if(board->mpi_rank == 0){
+			
+			printf("%x\n", b->data[x + BOARD_PADDING_X + BOARD_LINE_SKIP(*b) * BOARD_PADDING_Y].val |= board->recvBufDown[x].val);
+		}
 		
-		b->data[x + BOARD_PADDING_X + (BOARD_PADDING_Y + b->height / BACTERIA_PER_FIELD_Y) * BOARD_LINE_SKIP(*b)].val &= ~FIELD_ALL_NEIGHBOURS_BOTTOM_MASK;
-		b->data[x + BOARD_PADDING_X + (BOARD_PADDING_Y + b->height / BACTERIA_PER_FIELD_Y) * BOARD_LINE_SKIP(*b)].val |= board->recvBufDown[x].val;
+ 		b->data[x + BOARD_PADDING_X + ( b->height / BACTERIA_PER_FIELD_Y ) * BOARD_LINE_SKIP(*b)].val &= ~FIELD_ALL_NEIGHBOURS_TOP_MASK;
+ 		b->data[x + BOARD_PADDING_X + ( b->height / BACTERIA_PER_FIELD_Y ) * BOARD_LINE_SKIP(*b)].val |= board->recvBufDown[x].val & FIELD_ALL_NEIGHBOURS_TOP_MASK;
 	}
 	
-	for( int y = 0; y < GBOARD_LEFT_BUF_ELEMENTS(*board->local_board); y++ ) {
-		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board)].val &= ~FIELD_ALL_NEIGHBOURS_LEFT_MASK;
-		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board)].val |= board->recvBufLeft[y].val;
-		
-		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) - 1].val &= ~FIELD_ALL_NEIGHBOURS_RIGHT_MASK;
-		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) - 1].val |= board->recvBufRight[y].val;
-	}
-	
+// 	for( int y = 0; y < GBOARD_LEFT_BUF_ELEMENTS(*board->local_board); y++ ) {
+// 		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) + BOARD_PADDING_X].val &= ~FIELD_ALL_NEIGHBOURS_LEFT_MASK;
+// 		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) + BOARD_PADDING_X].val |= board->recvBufLeft[y].val;
+// 		
+// 		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) + board->local_board->width / BACTERIA_PER_FIELD_X].val &= ~FIELD_ALL_NEIGHBOURS_RIGHT_MASK;
+// 		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) + board->local_board->width / BACTERIA_PER_FIELD_X].val |= board->recvBufRight[y].val;
+// 	}
+// 	
 	
 }
 
