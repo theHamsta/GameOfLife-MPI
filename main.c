@@ -9,8 +9,8 @@
 #include "global_board.h"
 
 
-#define GLOBAL_BOARD_WIDTH 4*2
-#define GLOBAL_BOARD_HEIGHT 3*2
+#define GLOBAL_BOARD_WIDTH 4*4
+#define GLOBAL_BOARD_HEIGHT 3*4
 #define NUM_ROUNDS 100
 #define PERIODIC_BOUNDARY_CONDITIONS true
 
@@ -42,9 +42,9 @@ int main(int argc, char** argv) {
 	
 	field_initLuts();
 
-	field_t foo;
-	foo.val = 0x8849e;
-	field_printDebugAllLines(&foo);
+// 	field_t foo;
+// 	foo.val = (FIELD_ALL_NEIGHBOURS_TOP_MASK  | FIELD_ALL_NEIGHBOURS_TOP_RIGHT_MASK);;
+// 	field_printDebugAllLines(&foo);
 // 	srand(time(NULL) + world_rank);
 	srand(12 + world_rank);
 	globalBoard_t* gBoard = globalBoard_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT, world_rank, 2, 2);
@@ -60,13 +60,13 @@ int main(int argc, char** argv) {
 // 	BEGIN_MASTER_ONLY_SECTION(*gBoard)
 // 		board_printDebug(lBoard);
 // 	END_MASTER_ONLY_SECTION
-	for ( int i = 0; i < 2; i++ ) {
+	for ( int i = 0; i < 1; i++ ) {
 		globalBoard_step(gBoard);
 		globalBoard_printDebug(gBoard);
 		
 		BEGIN_MASTER_ONLY_SECTION(*gBoard)
 // 			board_step(lBoard);
-			board_printDebug(lBoard);
+// 			board_printDebug(lBoard);
 		END_MASTER_ONLY_SECTION
 	}
 
