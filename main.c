@@ -12,9 +12,12 @@
 #define GLOBAL_BOARD_WIDTH 4*8
 #define GLOBAL_BOARD_HEIGHT 3*18
 #define NUM_ROUNDS 100
-#define PERIODIC_BOUNDARY_CONDITIONS true
+#define GRAPHICAL_OUTPUT true
 
+#define NUM_MPI_RANKS_X 3
+#define NUM_MPI_RANKS_Y 3
 
+#define MAGIC_NUMBER 12
 
 void clearScreen() {
 	printf("\e[1;1H\e[2J");
@@ -26,15 +29,15 @@ void waitFor (time_t secs) {
 }
 
 int main(int argc, char** argv) {
+#ifdef NDEBUG
 	printf("Warning! Debug mode\n");
 	fflush(stdout);
+#endif
 	
     // Initialize the MPI environment
-    MPI_Init(NULL, NULL);
+    MPI_Init(&argc, &argv);
 
-    // Get the number of processes
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
 
     // Get the rank of the process
     int world_rank;
@@ -44,37 +47,28 @@ int main(int argc, char** argv) {
 	field_initLuts();
 
 
-	srand(12 + world_rank);
-	globalBoard_t* gBoard = globalBoard_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT,  world_rank, 2,2);
+	srand(MAGIC_NUMBER + world_rank);
+	
+	globalBoard_t* gBoard = globalBoard_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT,  world_rank, NUM_MPI_RANKS_X, NUM_MPI_RANKS_Y);
 	
 	globalBoard_fillRandomly(gBoard);
 	
-	board_t* lBoard = globalBoard_uniteLocalBoards(gBoard);
-// 	globalBoard_printDebug(gBoard);
+
+
 	
 
 
 	
-	BEGIN_MASTER_ONLY_SECTION(*gBoard)
-	
-// 		board_printDebug(lBoard);
-	END_MASTER_ONLY_SECTION
-	for ( int i = 0; i < 100; i++ ) {
-		clearScreen();
+
+	for ( int i = 0; i < NUM_ROUNDS; i++ ) {
+
 		globalBoard_step(gBoard);
-		globalBoard_print(gBoard);
-		usleep(100000);  
-// 		BEGIN_MASTER_ONLY_SECTION(*gBoard)
-// 			board_step(lBoard);
-// 			board_printDebug(lBoard);
-// 		END_MASTER_ONLY_SECTION
+			if(GRAPHICAL_OUTPUT) {
+			clearScreen();
+			globalBoard_print(gBoard);
+			usleep(100000);  		
+		}
 	}
-
-	
-
-// #ifdef NDEBUG
-// 	printf("Warning! Debug mode\n");
-// #endif
 
 	
 	
@@ -107,8 +101,7 @@ int main(int argc, char** argv) {
 // 	printf("%fs\n", seconds);
 // 	fflush(stdout); 
 	
-		
-    // Finalize the MPI environment.
+
     MPI_Finalize();
 	
 	
