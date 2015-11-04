@@ -51,12 +51,21 @@ int main(int argc, char** argv) {
 	
 	globalBoard_fillRandomly(gBoard);
 	
+	board_t* lBoard = globalBoard_uniteLocalBoards(gBoard);
 	
 	globalBoard_print(gBoard);
 	
-	for ( int i = 0; i < NUM_ROUNDS; i++ ) {
+	BEGIN_MASTER_ONLY_SECTION(*gBoard)
+		board_print(lBoard);
+	END_MASTER_ONLY_SECTION
+	for ( int i = 0; i < 2; i++ ) {
 		globalBoard_step(gBoard);
+		globalBoard_printDebug(gBoard);
 		
+		BEGIN_MASTER_ONLY_SECTION(*gBoard)
+			board_step(lBoard);
+			board_print(lBoard);
+		END_MASTER_ONLY_SECTION
 	}
 
 	

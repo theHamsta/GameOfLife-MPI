@@ -211,5 +211,10 @@ bool board_value_at(board_t* board, unsigned int x, unsigned int y)
 	assert( false && "NOT IMPLEMENTED" );
 }
 
+void board_step(board_t* board)
+{
+	board_broadcastNeighbourhoods(board);
+	board_updateFields(board);
+}
 
 

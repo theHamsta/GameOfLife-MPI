@@ -11,14 +11,18 @@
 
 
 
-#define GBOARD_UP_BUF_SIZE(BOARD) ( 2 * sizeof(field_t) * ((BOARD).width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)) 
+#define GBOARD_UP_BUF_SIZE(BOARD) (  sizeof(field_t) * ((BOARD).width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)) 
 #define GBOARD_DOWN_BUF_SIZE(BOARD) GBOARD_UP_BUF_SIZE(BOARD)
-#define GBOARD_LEFT_BUF_SIZE(BOARD) ( 2 * sizeof(field_t) * (BOARD).height / BACTERIA_PER_FIELD_Y)
+#define GBOARD_LEFT_BUF_SIZE(BOARD) ( sizeof(field_t) * (BOARD).height / BACTERIA_PER_FIELD_Y)
 #define GBOARD_RIGHT_BUF_SIZE(BOARD) GBOARD_LEFT_BUF_SIZE(BOARD)
 
-#define BEGIN_MASTER_ONLY_SECTION(GLOBAL_BOARD) if ((GLOBAL_BOARD).mpi_rank == 0) {
 
-#define END_MASTER_ONLY_SECTION }
+#define GBOARD_UP_BUF_ELEMENTS(BOARD) (  ((BOARD).width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)) 
+#define GBOARD_DOWN_BUF_ELEMENTS(BOARD) GBOARD_UP_BUF_SIZE(BOARD)
+#define GBOARD_LEFT_BUF_ELEMENTS(BOARD) ( (BOARD).height / BACTERIA_PER_FIELD_Y)
+#define GBOARD_RIGHT_BUF_ELEMENTS(BOARD) GBOARD_LEFT_BUF_SIZE(BOARD)
+
+
 
 void field_broadcastLeft( field_t* field, field_t* neighbour );
 void field_broadcastTopLeft( field_t* field, field_t* neighbour );
@@ -90,15 +94,15 @@ globalBoard_t* globalBoard_create(unsigned int width, unsigned int height, int r
 	MPI_Comm_rank(comm, &global_board->mpi_rank);
 
 	
-	global_board->sendBufLeft = malloc( GBOARD_LEFT_BUF_SIZE(*global_board->local_board) );
-	global_board->sendBufRight = malloc( GBOARD_RIGHT_BUF_SIZE(*global_board->local_board)  );
-	global_board->sendBufUp = malloc( GBOARD_UP_BUF_SIZE(*global_board->local_board) );
-	global_board->sendBufDown = malloc( GBOARD_DOWN_BUF_SIZE(*global_board->local_board) );
+	global_board->sendBufLeft = malloc( GBOARD_LEFT_BUF_SIZE(*global_board->local_board) * sizeof(field_t));
+	global_board->sendBufRight = malloc( GBOARD_RIGHT_BUF_SIZE(*global_board->local_board)* sizeof(field_t)  );
+	global_board->sendBufUp = malloc( GBOARD_UP_BUF_SIZE(*global_board->local_board) * sizeof(field_t));
+	global_board->sendBufDown = malloc( GBOARD_DOWN_BUF_SIZE(*global_board->local_board) * sizeof(field_t));
 	
-	global_board->recvBufLeft = malloc( GBOARD_LEFT_BUF_SIZE(*global_board->local_board) );
-	global_board->recvBufRight = malloc( GBOARD_RIGHT_BUF_SIZE(*global_board->local_board)  );
-	global_board->recvBufUp = malloc( GBOARD_UP_BUF_SIZE(*global_board->local_board) );
-	global_board->recvBufDown = malloc( GBOARD_DOWN_BUF_SIZE(*global_board->local_board) );
+	global_board->recvBufLeft = malloc( GBOARD_LEFT_BUF_SIZE(*global_board->local_board) * sizeof(field_t));
+	global_board->recvBufRight = malloc( GBOARD_RIGHT_BUF_SIZE(*global_board->local_board)  * sizeof(field_t));
+	global_board->recvBufUp = malloc( GBOARD_UP_BUF_SIZE(*global_board->local_board) * sizeof(field_t));
+	global_board->recvBufDown = malloc( GBOARD_DOWN_BUF_SIZE(*global_board->local_board) * sizeof(field_t));
 	
 	assert(global_board);
 
@@ -139,6 +143,17 @@ void globalBoard_print(globalBoard_t* board)
 	board_destroy(bigLocalBoard);
 	
 }
+
+void globalBoard_printDebug(globalBoard_t* board)
+{
+
+	board_t* bigLocalBoard = globalBoard_uniteLocalBoards(board);
+	BEGIN_MASTER_ONLY_SECTION(*board)
+		board_printDebug(bigLocalBoard);
+	END_MASTER_ONLY_SECTION
+	board_destroy(bigLocalBoard);
+}
+
 
 void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 {
@@ -243,7 +258,7 @@ void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 	
 	MPI_Isend((void*) &globalBoard->local_board->data[(globalBoard->local_board->height / BACTERIA_PER_FIELD_Y +BOARD_PADDING_X)*BOARD_LINE_SKIP(*globalBoard->local_board)], GBOARD_DOWN_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourDown, 0, globalBoard->mpi_comm, globalBoard->reqSendDown);
 	
-	for ( int y = 0; y < GBOARD_LEFT_BUF_SIZE(*globalBoard->local_board); y++ ) {
+	for ( int y = 0; y < GBOARD_LEFT_BUF_ELEMENTS(*globalBoard->local_board); y++ ) {
 		globalBoard->sendBufLeft[y].val = globalBoard->local_board->data[ (y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*globalBoard->local_board) ].val;
 		globalBoard->sendBufRight[y].val = globalBoard->local_board->data[ (y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*globalBoard->local_board) - 1 ].val;
 	}
@@ -277,7 +292,7 @@ void globalBoard_recvNeighbours( globalBoard_t* board )
 	MPI_Irecv((void*) board->recvBufUp, GBOARD_UP_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourDown, 0, board->mpi_comm, board->reqRecvUp);
 	MPI_Irecv((void*) board->recvBufDown, GBOARD_DOWN_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourUp, 0, board->mpi_comm, board->reqRecvDown);
 	MPI_Irecv((void*) board->recvBufLeft, GBOARD_LEFT_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourRight, 0, board->mpi_comm, board->reqRecvLeft);
-	MPI_Irecv((void*) board->recvBufRight, GBOARD_RIGHT_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourLeft, 0, board->mpi_comm, board->reqSendRight);
+	MPI_Irecv((void*) board->recvBufRight, GBOARD_RIGHT_BUF_SIZE(*board->local_board), MPI_INT, board->neighbourLeft, 0, board->mpi_comm, board->reqRecvRight);
 }
 
 void globalBoard_processRecv( globalBoard_t* board ) {
@@ -286,20 +301,20 @@ void globalBoard_processRecv( globalBoard_t* board ) {
 
 	MPI_Waitall(4, board->reqRecvUp, MPI_STATUS_IGNORE);
 	
-	for( int x = 0; x < GBOARD_UP_BUF_SIZE(*board->local_board); x++ ) {
+	for( int x = 0; x < GBOARD_UP_BUF_ELEMENTS(*board->local_board); x++ ) {
 		board->local_board->data[x].val &= ~FIELD_ALL_NEIGHBOURS_TOP_MASK;
 		board->local_board->data[x].val |= board->recvBufUp[x].val;
 		
-		board->local_board->data[x + (BOARD_PADDING_X + board->local_board->height) * BOARD_LINE_SKIP(*board->local_board)].val &= ~FIELD_ALL_NEIGHBOURS_BOTTOM_MASK;
-		board->local_board->data[x + (BOARD_PADDING_X + board->local_board->height) * BOARD_LINE_SKIP(*board->local_board)].val |= board->recvBufDown[x].val;
+		board->local_board->data[x + (BOARD_PADDING_Y + board->local_board->height / BACTERIA_PER_FIELD_Y) * BOARD_LINE_SKIP(*board->local_board)].val &= ~FIELD_ALL_NEIGHBOURS_BOTTOM_MASK;
+		board->local_board->data[x + (BOARD_PADDING_Y + board->local_board->height / BACTERIA_PER_FIELD_Y) * BOARD_LINE_SKIP(*board->local_board)].val |= board->recvBufDown[x].val;
 	}
 	
-	for( int y = 0; y < GBOARD_LEFT_BUF_SIZE(*board->local_board); y++ ) {
+	for( int y = 0; y < GBOARD_LEFT_BUF_ELEMENTS(*board->local_board); y++ ) {
 		board->local_board->data[(y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board)].val &= ~FIELD_ALL_NEIGHBOURS_LEFT_MASK;
 		board->local_board->data[(y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board)].val |= board->recvBufLeft[y].val;
 		
-		board->local_board->data[(y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) - 1].val &= ~FIELD_ALL_NEIGHBOURS_RIGHT_MASK;
-		board->local_board->data[(y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) - 1].val |= board->recvBufRight[y].val;
+		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) - 1].val &= ~FIELD_ALL_NEIGHBOURS_RIGHT_MASK;
+		board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) - 1].val |= board->recvBufRight[y].val;
 	}
 	
 	
@@ -314,7 +329,7 @@ void globalBoard_step(globalBoard_t* board)
 	globalBoard_recvNeighbours(board);
 	board_broadcastNeighbourhoods(board->local_board);
 	globalBoard_processRecv(board);
-
+	_logMaster(board,"wait for all buffer sent");
 	MPI_Waitall(4, board->reqSendUp, MPI_STATUS_IGNORE);
 	board_updateFields(board->local_board);
 	

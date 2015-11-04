@@ -5,6 +5,10 @@
 
 #include <mpi.h>
 
+#define BEGIN_MASTER_ONLY_SECTION(GLOBAL_BOARD) if ((GLOBAL_BOARD).mpi_rank == 0) {
+
+#define END_MASTER_ONLY_SECTION }
+
 typedef struct globalBoard_s
 {
 	unsigned int global_width;
@@ -52,6 +56,8 @@ typedef struct globalBoard_s
 globalBoard_t* globalBoard_create( unsigned int width, unsigned int height, int rank, int numRanksX, int numRanksY );
 
 void globalBoard_print( globalBoard_t* board );
+
+void globalBoard_printDebug( globalBoard_t* board );
 
 void globalBoard_fillRandomly ( globalBoard_t* board );
 
