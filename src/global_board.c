@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <string.h>
 
 
 #include "log.h"
@@ -16,7 +16,7 @@
 #define GBOARD_LEFT_BUF_SIZE(BOARD) ( 2 * sizeof(field_t) * (BOARD).height)
 #define GBOARD_RIGHT_BUF_SIZE(BOARD) GBOARD_LEFT_BUF_SIZE(BOARD)
 
-#define BEGIN_MASTER_ONLY_SECTION(GLOBAL_BOARD) if (((GLOBAL_BOARD).mpi_rankX == 0) && ((GLOBAL_BOARD).mpi_rankY == 0)) {
+#define BEGIN_MASTER_ONLY_SECTION(GLOBAL_BOARD) if ((GLOBAL_BOARD).mpi_rank == 0) {
 
 #define END_MASTER_ONLY_SECTION }
 
@@ -81,14 +81,14 @@ globalBoard_t* globalBoard_create(unsigned int width, unsigned int height, int r
 	global_board->mpi_sizeX = numRanksX;
 	global_board->mpi_sizeY = numRanksY;
 	
-	
-	
-	global_board->neighbourLeft = (coords[0] + numRanksX - 1) % numRanksX;
-	global_board->neighbourRight = (coords[0] + numRanksX + 1) % numRanksX;
-	global_board->neighbourDown = (coords[1] + numRanksY - 1) % numRanksY;
-	global_board->neighbourUp = (coords[1] + numRanksY + 1) % numRanksY;
-	
 	global_board->mpi_comm = comm;
+	
+	MPI_Cart_shift( global_board->mpi_comm, 0, -1, &global_board->mpi_rank, &global_board->neighbourLeft);
+	MPI_Cart_shift( global_board->mpi_comm, 0, +1, &global_board->mpi_rank, &global_board->neighbourRight);
+	MPI_Cart_shift( global_board->mpi_comm, 1, -1, &global_board->mpi_rank, &global_board->neighbourUp);
+	MPI_Cart_shift( global_board->mpi_comm, 1, +1, &global_board->mpi_rank, &global_board->neighbourDown);
+	MPI_Comm_rank(comm, &global_board->mpi_rank);
+
 	
 	global_board->sendBufLeft = malloc( GBOARD_LEFT_BUF_SIZE(*global_board->local_board) );
 	global_board->sendBufRight = malloc( GBOARD_RIGHT_BUF_SIZE(*global_board->local_board)  );
@@ -131,7 +131,7 @@ void globalBoard_fillRandomly(globalBoard_t* board)
 
 void globalBoard_print(globalBoard_t* board)
 {
-	_log("Enter globalBoard_print");
+	
 	MPI_Barrier(board->mpi_comm);
 	
 	
@@ -312,7 +312,54 @@ void globalBoard_destroy(globalBoard_t* board)
 	free(board->sendBufLeft);
 	free(board->sendBufRight);
 	
+	free(board->reqRecvUp);
+	
 	free(board);
 }
+
+board_t* globalBoard_uniteLocalBoards(globalBoard_t* board)
+{
+	
+	_log("Enter globalBoard_uniteLocalBoards");
+	
+	
+	board_t* mergedBoard = board_create(board->global_width, board->global_height);
+	
+	
+	if( board->mpi_rank != 0) {
+		for (int i = 0; i < board->local_board->height / BACTERIA_PER_FIELD_Y; i++){
+			_log("%i sending %i", board->mpi_rank , i);
+			MPI_Send((void*) (board->local_board->data + 1 + BOARD_LINE_SKIP(*board->local_board)), board->local_board->width / BACTERIA_PER_FIELD_X, MPI_INT, 0, 0, board->mpi_comm);
+			
+		}
+	}
+	
+	BEGIN_MASTER_ONLY_SECTION(*board)
+	
+	for (int y = 0; y < board->local_board->height / BACTERIA_PER_FIELD_Y; y++){
+		int idx = (1) + (y + 1) * BOARD_LINE_SKIP(*mergedBoard);
+		memcpy(&mergedBoard->data[idx], &board->local_board->data[ 1 + (y + 1) * BOARD_LINE_SKIP(*board->local_board)], sizeof(field_t) * board->local_board->width / BACTERIA_PER_FIELD_X);
+	}
+	
+	for ( int srcRank = 1; srcRank < board->mpi_sizeX * board->mpi_sizeY; srcRank++) {
+		
+		for (int y = 0; y < board->local_board->height / BACTERIA_PER_FIELD_Y; y++){
+			int coords[2];
+			MPI_Cart_coords(board->mpi_comm, srcRank, 2, coords);
+			int idx = (1 + coords[0] * board->local_board->width / BACTERIA_PER_FIELD_X) + (1 + coords[1] * board->local_board->height / BACTERIA_PER_FIELD_Y + y) * BOARD_LINE_SKIP(*mergedBoard);
+			MPI_Status stat;
+			
+ 			MPI_Recv((void*) &mergedBoard->data[idx], board->local_board->width / BACTERIA_PER_FIELD_X, MPI_INT, srcRank,  0, board->mpi_comm, MPI_STATUS_IGNORE);
+			
+			
+		}
+	}
+	END_MASTER_ONLY_SECTION
+
+	MPI_Barrier(board->mpi_comm);
+		
+	return mergedBoard;
+}
+
 
 

@@ -14,6 +14,7 @@ typedef struct globalBoard_s
 	unsigned int local_x;
 	unsigned int local_y;
 	
+	unsigned int mpi_rank;
 	unsigned int mpi_rankX;
 	unsigned int mpi_rankY;
 	unsigned int mpi_sizeX;
@@ -57,6 +58,8 @@ void globalBoard_fillRandomly ( globalBoard_t* board );
 void globalBoard_step ( globalBoard_t* board );
 
 void globalBoard_destroy( globalBoard_t* board );
+
+board_t* globalBoard_uniteLocalBoards( globalBoard_t* board );
 
 
 #endif // GLOBAL_BOARD_H
