@@ -116,7 +116,7 @@ globalBoard_t* globalBoard_create(unsigned int width, unsigned int height, int r
 
 void globalBoard_fillRandomly(globalBoard_t* board)
 {
-	_log("Enter globalBoard_fillRandomly");
+	_logMaster(board, "Enter globalBoard_fillRandomly");
 	MPI_Barrier(board->mpi_comm);
 	for ( int y = 0; y < board->mpi_sizeY; y++ ) {
 		for ( int x = 0; x < board->mpi_sizeX; x++ ) {
@@ -131,127 +131,143 @@ void globalBoard_fillRandomly(globalBoard_t* board)
 
 void globalBoard_print(globalBoard_t* board)
 {
+	
+	board_t* bigLocalBoard = globalBoard_uniteLocalBoards(board);
 	BEGIN_MASTER_ONLY_SECTION(*board)
-		board_t* bigLocalBoard = globalBoard_uniteLocalBoards(board);
 		board_print(bigLocalBoard);
-		board_destroy(bigLocalBoard);
 	END_MASTER_ONLY_SECTION
+	board_destroy(bigLocalBoard);
+	
 }
 
 void globalBoard_sendNeighbours( globalBoard_t* globalBoard )
 {
-	_log("Enter globalBoard_sendNeighbours");
+	_logMaster(globalBoard,"Enter globalBoard_sendNeighbours");
 
-	field_t* up = globalBoard->sendBufUp;
-	field_t* down = globalBoard->sendBufDown;
-	field_t* left = globalBoard->sendBufLeft;
-	field_t* right = globalBoard->sendBufDown;
-	
-	board_t* board = globalBoard->local_board;
-	
-	field_t* origUp = up++;
-	up += 2;
-	field_t* origDown = down++;
-	field_t* origLeft = left++;
-	field_t* origRight = right++;
-	right += 2;
-	
-	field_t tmp;
-	
-	for ( int x = 0; x < board->width; x++) {
-		field_t cur = board->data[ BOARD_PADDING_X + x ];
-		if(FIELD_WAS_CHANGED(cur)){
+// 	field_t* up = globalBoard->sendBufUp;
+// 	field_t* down = globalBoard->sendBufDown;
+// 	field_t* left = globalBoard->sendBufLeft;
+// 	field_t* right = globalBoard->sendBufDown;
+// 	
+// 	board_t* board = globalBoard->local_board;
+// 	
+// 	field_t* origUp = up++;
+// 	up += 2;
+// 	field_t* origDown = down++;
+// 	field_t* origLeft = left++;
+// 	field_t* origRight = right++;
+// 	right += 2;
+// 	
+// 	field_t tmp;
+// 	
+// 	for ( int x = 0; x < board->width; x++) {
+// 		field_t cur = board->data[ BOARD_PADDING_X + x ];
+// 		if(FIELD_WAS_CHANGED(cur)){
+// 
+// 			tmp.val = x;
+// 			*up = tmp;
+// 			up++;
+// 			field_broadcastTop(&cur, up);
+// 			up++;
+// 		}
+// 	}
+// 
+// 	
+// 	for ( int x = 0; x < board->width; x++) {
+// 		field_t cur = board->data[ BOARD_PADDING_X + x + (BOARD_PADDING_Y + board->height) * (board->width + 2 * BOARD_PADDING_X) ];
+// 		if(FIELD_WAS_CHANGED(cur)){
+// 
+// 			tmp.val = x;
+// 			*down = tmp;
+// 			down++;
+// 			field_broadcastBottom(&cur, down);
+// 			down++;
+// 		}
+// 	}
+// 
+// 	
+// 	for ( int y = 0; y < board->width; y++) {
+// 		field_t curLeft = board->data[ (BOARD_PADDING_Y + board->height) * (y+1) ];
+// 		field_t curRight = board->data[ (BOARD_PADDING_Y + board->height) * (y+2) - 1 ];
+// 		if(FIELD_WAS_CHANGED(curLeft)){
+// 
+// 			tmp.val = y;
+// 			*left = tmp;
+// 			left++;
+// 			field_broadcastLeft(&curLeft, left);
+// 			left++;
+// 		}
+// 		
+// 		if(FIELD_WAS_CHANGED(curRight)){
+// 			
+// 			tmp.val = y;
+// 			*right = tmp;
+// 			right++;
+// 			field_broadcastRight(&curRight, right);
+// 			right++;
+// 		}
+// 	}
+// 
+// 	
+// 	tmp.val = (uint32_t) -1;
+// 	origUp[1] = tmp; // will be recasted to int again
+// 	field_broadcastTopLeft(board->data + 0, origUp + 2);
+// 	origDown[1] = tmp;
+// 	field_broadcastBottomLeft(&board->data[ (BOARD_PADDING_Y + board->height) * BOARD_LINE_SKIP(*board)], origDown + 2);
+// 	
+// 	tmp.val = board->width;
+// 	*up = tmp; 
+// 	up++;
+// 	field_broadcastTopRight(&board->data[ BOARD_PADDING_X + board->width ], up);
+// 	up++;
+// 	*down = tmp; 
+// 	down++;
+// 	field_broadcastBottomRight(&board->data[ BOARD_PADDING_X + board->width + BOARD_LINE_SKIP(*board) * (board->height + BOARD_PADDING_Y) ], down);
+// 	down++;
+// 	
+// 	
+// 	
+// 	tmp.val = left - origLeft;
+// 	origLeft[0] = tmp;
+// 	tmp.val = right - origRight;
+// 	origRight[0] = tmp;
+// 	tmp.val = up - origUp;
+// 	origUp[0] = tmp;
+// 	tmp.val = down - origDown;
+// 	origDown[0] = tmp;
+// 	
+// 
+// 
 
-			tmp.val = x;
-			*up = tmp;
-			up++;
-			field_broadcastTop(&cur, up);
-			up++;
-		}
+	MPI_Isend((void*) globalBoard->local_board->data, GBOARD_UP_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourUp, 0, globalBoard->mpi_comm, globalBoard->reqSendUp);
+	
+	MPI_Isend((void*) &globalBoard->local_board->data[(globalBoard->local_board->height / BACTERIA_PER_FIELD_Y +BOARD_PADDING_X)*BOARD_LINE_SKIP(*globalBoard->local_board)], GBOARD_DOWN_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourDown, 0, globalBoard->mpi_comm, globalBoard->reqSendDown);
+	
+	for ( int y = 0; y < GBOARD_LEFT_BUF_SIZE(*globalBoard->local_board); y++ ) {
+		globalBoard->sendBufLeft[y].val = globalBoard->local_board->data[ (y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*globalBoard->local_board) ].val;
+		globalBoard->sendBufRight[y].val = globalBoard->local_board->data[ (y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*globalBoard->local_board) - 1 ].val;
 	}
-
 	
-	for ( int x = 0; x < board->width; x++) {
-		field_t cur = board->data[ BOARD_PADDING_X + x + (BOARD_PADDING_Y + board->height) * (board->width + 2 * BOARD_PADDING_X) ];
-		if(FIELD_WAS_CHANGED(cur)){
-
-			tmp.val = x;
-			*down = tmp;
-			down++;
-			field_broadcastBottom(&cur, down);
-			down++;
-		}
-	}
-
+	MPI_Isend((void*) globalBoard->sendBufLeft, GBOARD_LEFT_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourLeft, 0, globalBoard->mpi_comm, globalBoard->reqSendLeft);
 	
-	for ( int y = 0; y < board->width; y++) {
-		field_t curLeft = board->data[ (BOARD_PADDING_Y + board->height) * (y+1) ];
-		field_t curRight = board->data[ (BOARD_PADDING_Y + board->height) * (y+2) - 1 ];
-		if(FIELD_WAS_CHANGED(curLeft)){
-
-			tmp.val = y;
-			*left = tmp;
-			left++;
-			field_broadcastLeft(&curLeft, left);
-			left++;
-		}
-		
-		if(FIELD_WAS_CHANGED(curRight)){
-			
-			tmp.val = y;
-			*right = tmp;
-			right++;
-			field_broadcastRight(&curRight, right);
-			right++;
-		}
-	}
-
-	
-	tmp.val = (uint32_t) -1;
-	origUp[1] = tmp; // will be recasted to int again
-	field_broadcastTopLeft(board->data + 0, origUp + 2);
-	origDown[1] = tmp;
-	field_broadcastBottomLeft(&board->data[ (BOARD_PADDING_Y + board->height) * BOARD_LINE_SKIP(*board)], origDown + 2);
-	
-	tmp.val = board->width;
-	*up = tmp; 
-	up++;
-	field_broadcastTopRight(&board->data[ BOARD_PADDING_X + board->width ], up);
-	up++;
-	*down = tmp; 
-	down++;
-	field_broadcastBottomRight(&board->data[ BOARD_PADDING_X + board->width + BOARD_LINE_SKIP(*board) * (board->height + BOARD_PADDING_Y) ], down);
-	down++;
-	
-	
-	
-	tmp.val = left - origLeft;
-	origLeft[0] = tmp;
-	tmp.val = right - origRight;
-	origRight[0] = tmp;
-	tmp.val = up - origUp;
-	origUp[0] = tmp;
-	tmp.val = down - origDown;
-	origDown[0] = tmp;
+	MPI_Isend((void*) globalBoard->sendBufRight, GBOARD_RIGHT_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourRight, 0, globalBoard->mpi_comm, globalBoard->reqSendRight);
 	
 
 	
-		
+// 	MPI_Isend((void*) origLeft, GBOARD_LEFT_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourLeft, 0, globalBoard->mpi_comm, globalBoard->reqSendLeft);
+// 	
+// 	MPI_Isend((void*) origRight, GBOARD_RIGHT_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourRight, 0, globalBoard->mpi_comm, globalBoard->reqSendRight);
+// 	
+// 	MPI_Isend((void*) origUp, GBOARD_UP_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourUp, 0, globalBoard->mpi_comm, globalBoard->reqSendUp);
+// 	
+// 	MPI_Isend((void*) origDown, GBOARD_DOWN_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourDown, 0, globalBoard->mpi_comm, globalBoard->reqSendDown);
 	
-	MPI_Isend((void*) origLeft, GBOARD_LEFT_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourLeft, 0, globalBoard->mpi_comm, globalBoard->reqSendLeft);
-	
-	MPI_Isend((void*) origRight, GBOARD_RIGHT_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourRight, 0, globalBoard->mpi_comm, globalBoard->reqSendRight);
-	
-	MPI_Isend((void*) origUp, GBOARD_UP_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourUp, 0, globalBoard->mpi_comm, globalBoard->reqSendUp);
-	
-	MPI_Isend((void*) origDown, GBOARD_DOWN_BUF_SIZE(*globalBoard->local_board), MPI_INT, globalBoard->neighbourDown, 0, globalBoard->mpi_comm, globalBoard->reqSendDown);
-	
-	_log("Exit globalBoard_sendNeighbours");
+	_logMaster(globalBoard,"Exit globalBoard_sendNeighbours");
 }
 
 void globalBoard_recvNeighbours( globalBoard_t* board )
 {
-	_log("Enter globalBoard_recvNeighbours");
+	_logMaster(board,"Enter globalBoard_recvNeighbours");
 	
 	*board->reqRecvUp = 0;
 	*board->reqRecvDown = 0;
@@ -265,18 +281,41 @@ void globalBoard_recvNeighbours( globalBoard_t* board )
 }
 
 void globalBoard_processRecv( globalBoard_t* board ) {
-	_log("Enter globalBoard_processRecv");
+	_logMaster(board,"Enter globalBoard_processRecv");
+	
+
+	MPI_Waitall(4, board->reqRecvUp, MPI_STATUS_IGNORE);
+	
+	for( int x = 0; x < GBOARD_UP_BUF_SIZE(*board->local_board); x++ ) {
+		board->local_board->data[x].val &= ~FIELD_ALL_NEIGHBOURS_TOP_MASK;
+		board->local_board->data[x].val |= board->recvBufUp[x].val;
+		
+		board->local_board->data[x + (BOARD_PADDING_X + board->local_board->height) * BOARD_LINE_SKIP(*board->local_board)].val &= ~FIELD_ALL_NEIGHBOURS_BOTTOM_MASK;
+		board->local_board->data[x + (BOARD_PADDING_X + board->local_board->height) * BOARD_LINE_SKIP(*board->local_board)].val |= board->recvBufDown[x].val;
+	}
+	
+	for( int y = 0; y < GBOARD_LEFT_BUF_SIZE(*board->local_board); y++ ) {
+		board->local_board->data[(y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board)].val &= ~FIELD_ALL_NEIGHBOURS_LEFT_MASK;
+		board->local_board->data[(y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board)].val |= board->recvBufLeft[y].val;
+		
+		board->local_board->data[(y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) - 1].val &= ~FIELD_ALL_NEIGHBOURS_RIGHT_MASK;
+		board->local_board->data[(y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) - 1].val |= board->recvBufRight[y].val;
+	}
+	
+	
 }
 
 
 void globalBoard_step(globalBoard_t* board)
 {
-	_log("Enter globalBoard_step");
+	_logMaster(board,"Enter globalBoard_step");
 	
 	globalBoard_sendNeighbours(board);
 	globalBoard_recvNeighbours(board);
 	board_broadcastNeighbourhoods(board->local_board);
 	globalBoard_processRecv(board);
+
+	MPI_Waitall(4, board->reqSendUp, MPI_STATUS_IGNORE);
 	board_updateFields(board->local_board);
 	
 }
@@ -305,7 +344,7 @@ void globalBoard_destroy(globalBoard_t* board)
 board_t* globalBoard_uniteLocalBoards(globalBoard_t* board)
 {
 	
-	_log("Enter globalBoard_uniteLocalBoards");
+	_logMaster(board, "Enter globalBoard_uniteLocalBoards");
 	
 	
 	board_t* mergedBoard = board_create(board->global_width, board->global_height);
@@ -313,7 +352,6 @@ board_t* globalBoard_uniteLocalBoards(globalBoard_t* board)
 	
 	if( board->mpi_rank != 0) {
 		for (int i = 0; i < board->local_board->height / BACTERIA_PER_FIELD_Y; i++){
-			_log("%i sending %i", board->mpi_rank , i);
 			MPI_Send((void*) (board->local_board->data + 1 + BOARD_LINE_SKIP(*board->local_board)), board->local_board->width / BACTERIA_PER_FIELD_X, MPI_INT, 0, 0, board->mpi_comm);
 			
 		}

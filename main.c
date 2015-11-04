@@ -51,18 +51,13 @@ int main(int argc, char** argv) {
 	
 	globalBoard_fillRandomly(gBoard);
 	
-	board_t* bigBoard = globalBoard_uniteLocalBoards(gBoard);
 	
-	if(gBoard->mpi_rank == 0) {
-		board_print(bigBoard);	
+	globalBoard_print(gBoard);
+	
+	for ( int i = 0; i < NUM_ROUNDS; i++ ) {
+		globalBoard_step(gBoard);
+		
 	}
-	
-// 	globalBoard_print(gBoard);
-	
-// 	for ( int i = 0; i < NUM_ROUNDS; i++ ) {
-// 		globalBoard_step(gBoard);
-// 		
-// 	}
 
 	
 
