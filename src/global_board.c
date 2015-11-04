@@ -24,7 +24,7 @@
 
 
 typedef enum messageDirection_e{
-	DIRECTION_UP, DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_RIGHT
+	DIRECTION_UP, DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_RIGHT, DIRECTION_TL, DIRECTION_TR, DIRECTION_BL, DIRECTION_BR
 } messageDirection_t;
 
 void field_broadcastLeft( field_t* field, field_t* neighbour );
