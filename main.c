@@ -41,6 +41,8 @@ int main(int argc, char** argv) {
 	int numMpiRankY;
 	bool bPrintOutput;
 	
+	double start, end, max_end = 0, min_start = 10000;
+	
 	// Initialize the MPI environment
     MPI_Init(&argc, &argv);
 	// Get the rank of the process
@@ -111,8 +113,9 @@ int main(int argc, char** argv) {
 	globalBoard_fillRandomly(gBoard);
 	
 
+	MPI_Barrier(gBoard->mpi_comm);
+	start = MPI_Wtime();
 	
-
 	for ( int i = 0; i < numRounds; i++ ) {
 
 		globalBoard_step(gBoard);
@@ -122,6 +125,9 @@ int main(int argc, char** argv) {
 			usleep(1000000);  		
 		}
 	}
+	MPI_Barrier(gBoard->mpi_comm);
+	end = MPI_Wtime();
+	
 	globalBoard_destroy(gBoard);
 	
 	
@@ -154,9 +160,11 @@ int main(int argc, char** argv) {
 // 	printf("%fs\n", seconds);
 // 	fflush(stdout); 
 	
-
-    MPI_Finalize();
+	if ( world_rank == 0 )
+	printf("\n%d\n", end-start);
 	
+    MPI_Finalize();
+
 	
 	
 	
