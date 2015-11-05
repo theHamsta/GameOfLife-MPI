@@ -14,8 +14,8 @@
 #define NUM_ROUNDS 100
 #define GRAPHICAL_OUTPUT true
 
-#define NUM_MPI_RANKS_X 9
-#define NUM_MPI_RANKS_Y 9
+#define NUM_MPI_RANKS_X 3
+#define NUM_MPI_RANKS_Y 3
 
 #define MAGIC_NUMBER 12
 
@@ -34,14 +34,71 @@ int main(int argc, char** argv) {
 	fflush(stdout);
 #endif
 	
-    // Initialize the MPI environment
+	int numRounds;
+	int globalBoardWidth;
+	int globalBoardHeight;
+	int numMpiRankX;
+	int numMpiRankY;
+	bool bPrintOutput;
+	
+	// Initialize the MPI environment
     MPI_Init(&argc, &argv);
-
-
-
-    // Get the rank of the process
+	// Get the rank of the process
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	
+	
+	
+	if( argc != 7 ) {
+		if(world_rank == 0) {
+			printf("Usage:\n"
+				"\t gameoflife 	numRounds globalBoardWidth(in multiples of 4) globalBoardHeight(in multiples of 3) numMpiRankX numMpiRankY bPrintOutput[1 for output]"
+			);
+		}
+		MPI_Finalize();
+		exit( EXIT_SUCCESS );	
+	} else {
+		int numVars = 0;
+		numVars += sscanf(argv[1],"%i" , &numRounds);
+		numVars += sscanf(argv[2],"%i" , &globalBoardWidth);
+		numVars += sscanf(argv[3],"%i" , &globalBoardHeight);
+		numVars += sscanf(argv[4],"%i" , &numMpiRankX);
+		numVars += sscanf(argv[5],"%i" , &numMpiRankY);
+		numVars += sscanf(argv[6],"%i" , &bPrintOutput);
+		
+		globalBoardWidth *= BACTERIA_PER_FIELD_X;
+		globalBoardHeight *= BACTERIA_PER_FIELD_Y;
+		
+		if(numVars != 6){
+			if( world_rank == 0 ) {
+				printf("Error parsing arguments!\n");
+			}
+			MPI_Finalize();
+			exit( EXIT_SUCCESS );	
+		}
+		
+	}
+	if(world_rank == 0){
+		printf("Started with the following arguments\n"
+			"numRounds: %i\n"
+			"globalBoardWidth: %i\n"
+			"globalBoardHeight: %i\n"
+			"numMpiRankX: %i\n"
+			"numMpiRankY: %i\n"
+			"bPrintOutput: %i\n",
+		 	 numRounds,
+	 globalBoardWidth,
+	 globalBoardHeight,
+	 numMpiRankX,
+	 numMpiRankY,
+	 bPrintOutput
+		);
+	}
+
+
+
+
+
 	
 	
 	field_initLuts();
@@ -49,20 +106,20 @@ int main(int argc, char** argv) {
 
 	srand(MAGIC_NUMBER + world_rank);
 	
-	globalBoard_t* gBoard = globalBoard_create(GLOBAL_BOARD_WIDTH, GLOBAL_BOARD_HEIGHT,  world_rank, NUM_MPI_RANKS_X, NUM_MPI_RANKS_Y);
+	globalBoard_t* gBoard = globalBoard_create(globalBoardWidth, globalBoardHeight,  world_rank, numMpiRankX, numMpiRankY);
 	
 	globalBoard_fillRandomly(gBoard);
 	
 
 	
 
-	for ( int i = 0; i < NUM_ROUNDS; i++ ) {
+	for ( int i = 0; i < numRounds; i++ ) {
 
 		globalBoard_step(gBoard);
-		if(GRAPHICAL_OUTPUT) {
+		if(bPrintOutput) {
 			clearScreen();
 			globalBoard_print(gBoard);
-			usleep(100000);  		
+			usleep(1000000);  		
 		}
 	}
 	globalBoard_destroy(gBoard);
