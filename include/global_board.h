@@ -10,6 +10,9 @@
 #define END_MASTER_ONLY_SECTION }
 
 
+#define GBOARD_NUM_DIRECTIONS (8)
+#define GBOARD_NUM_DIAG_DIRECTIONS (4)
+#define GBOARD_NUM_PERPENDICULAR_DIRECTIONS (4)
 
 typedef struct globalBoard_s
 {
@@ -27,16 +30,16 @@ typedef struct globalBoard_s
 	unsigned int mpi_sizeY;
 	
 	
-	unsigned int neighbourLeft;
-	unsigned int neighbourRight;
-	unsigned int neighbourUp;
-	unsigned int neighbourDown;
+	int neighbourLeft;
+	int neighbourRight;
+	int neighbourUp;
+	int neighbourDown;
 	
 	// diagonal neighbours
-	unsigned int neighbourTL;
-	unsigned int neighbourTR;
-	unsigned int neighbourBL;
-	unsigned int neighbourBR;
+	int neighbourTL;
+	int neighbourTR;
+	int neighbourBL;
+	int neighbourBR;
 	
 	
 	MPI_Comm mpi_comm;
@@ -50,16 +53,10 @@ typedef struct globalBoard_s
 	field_t* recvBufRight;
 	field_t* recvBufUp;
 	field_t* recvBufDown;
+	field_t* recvBufCourners;
 	
-	MPI_Request* reqSendUp;
-	MPI_Request* reqSendLeft;
-	MPI_Request* reqSendRight;
-	MPI_Request* reqSendDown;
-	
-	MPI_Request* reqRecvUp;
-	MPI_Request* reqRecvLeft;
-	MPI_Request* reqRecvRight;
-	MPI_Request* reqRecvDown;
+	MPI_Request* reqSend;
+	MPI_Request* reqRecv;
 	
 } globalBoard_t;
 

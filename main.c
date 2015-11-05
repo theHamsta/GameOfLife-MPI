@@ -14,8 +14,8 @@
 #define NUM_ROUNDS 100
 #define GRAPHICAL_OUTPUT true
 
-#define NUM_MPI_RANKS_X 3
-#define NUM_MPI_RANKS_Y 3
+#define NUM_MPI_RANKS_X 9
+#define NUM_MPI_RANKS_Y 9
 
 #define MAGIC_NUMBER 12
 
@@ -54,10 +54,6 @@ int main(int argc, char** argv) {
 	globalBoard_fillRandomly(gBoard);
 	
 
-
-	
-
-
 	
 
 	for ( int i = 0; i < NUM_ROUNDS; i++ ) {
@@ -69,7 +65,7 @@ int main(int argc, char** argv) {
 			usleep(100000);  		
 		}
 	}
-
+	globalBoard_destroy(gBoard);
 	
 	
 // 	field_initLuts();

@@ -173,7 +173,7 @@ void board_updateInnerFields(board_t* board)
 	for ( unsigned int y = 1; y < board->height / BACTERIA_PER_FIELD_Y - 1; y++ ) {
 		for( unsigned int x = 1; x < board->width / BACTERIA_PER_FIELD_X - 1; x++ ) {
 			
-			field_t *cur = &board->data[ x + BOARD_PADDING_X + (y+BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board)];
+			field_t *cur = BOARD_GET_FIELD_PTR(board, x, y);
 			
 			if(cur->val != 0) {
 				field_update(cur);
