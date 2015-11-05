@@ -1,0 +1,14 @@
+O Jogo da Vida é um autômato celular criado em 1970 por John Horton Conway \cite{wikipedia}. Simula uma colonia de bactérias num tabuleiro de células retangulares.\\
+
+As regras desse jogo foram construídas simples. Cada bactéria está representada por uma célula que pode ter dois estados: viva ou morta. Uma vez inicializado o tabuleiro (aleatoriamente ou com configurações determinadas previamente), calcula-se em cada ronda do jogo uma nova geração de bactérias usando os estados das células na geração anterior.\\
+
+Se uma bactéria morre, nasce ou fica no seu estado atual, depende da sua vizinhança ou seja as oito células no entrono da célula a ser calculada. Segundo \cite{wikipedia} as regras são as seguintes:
+\begin{enumerate}
+
+ \item Qualquer célula viva com menos de dois vizinhos vivos morre de solidão.
+ \item   Qualquer célula viva com mais de três vizinhos vivos morre de superpopulação.
+ \item   Qualquer célula morta com exatamente três vizinhos vivos se torna uma célula viva.
+ \item   Qualquer célula viva com dois ou três vizinhos vivos continua no mesmo estado para a próxima geração.
+
+\end{enumerate}
+

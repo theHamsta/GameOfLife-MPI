@@ -1,0 +1,60 @@
+% book example for classicthesis.sty
+\documentclass[
+  % Replace twoside with oneside if you are printing your thesis on a single side
+  % of the paper, or for viewing on screen.
+  %oneside,
+  oneside,
+  11pt, a4paper,
+  footinclude=true,
+  headinclude=true,
+  cleardoublepage=empty
+]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{hyperref}
+\usepackage{verbatim}
+\usepackage[portuguese]{babel}
+%\usepackage{lipsum}
+%\usepackage[linedheaders,parts,pdfspacing]{classicthesis}
+%\usepackage{amsmath}
+%\usepackage{amsthm}
+%\usepackage{acronym}
+\usepackage[backend=bibtex]{biblatex}
+\bibliography{references}
+\nocite{*}
+
+\setlength{\parindent}{0pt}
+
+
+\title{Implementação do Jogo da Vida para Arquiteturas Distribuídas}
+\subtitle{T\'opicos em Arquiteturas Paralelas}
+\author{Stephan Seitz}
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Regras do Jogo}
+\input{input/1_regras}
+
+\section{Implementação}
+
+\subsection{Representação das Bactérias}
+\input{input/2_repesentacao}
+
+\subsection{Algoritmo de Atualização do Tabuleiro}
+
+\subsection{Separação do Problema e Comunicação entre Processos}
+
+\subsection{Balancia de Carga}
+
+\section{Resultados}
+
+\newpage
+\printbibliography
+\end{document}
