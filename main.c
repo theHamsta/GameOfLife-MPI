@@ -9,8 +9,8 @@
 #include "global_board.h"
 
 
-#define GLOBAL_BOARD_WIDTH 4*8
-#define GLOBAL_BOARD_HEIGHT 3*18
+#define GLOBAL_BOARD_WIDTH 4*9
+#define GLOBAL_BOARD_HEIGHT 3*9
 #define NUM_ROUNDS 100
 #define GRAPHICAL_OUTPUT true
 
@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 	for ( int i = 0; i < NUM_ROUNDS; i++ ) {
 
 		globalBoard_step(gBoard);
-			if(GRAPHICAL_OUTPUT) {
+		if(GRAPHICAL_OUTPUT) {
 			clearScreen();
 			globalBoard_print(gBoard);
 			usleep(100000);  		

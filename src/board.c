@@ -182,13 +182,35 @@ void board_updateInnerFields(board_t* board)
 	}
 }
 
-void board_updateOuterFields(board_t* board)
+
+void board_updateCornerFields(board_t* board)
 {
-	field_t* current = BOARD_PTR_FIRST_FIELD(*board);
+	field_t* topLeft = BOARD_GET_FIELD_PTR(board, 0, 0);
+	field_t* topRight = BOARD_GET_FIELD_PTR(board, board->width / BACTERIA_PER_FIELD_X - 1, 0);
+	field_t* bottomLeft = BOARD_GET_FIELD_PTR(board, 0, board->height / BACTERIA_PER_FIELD_Y - 1);
+	field_t* bottomRight = BOARD_GET_FIELD_PTR(board, board->width / BACTERIA_PER_FIELD_X - 1, board->height / BACTERIA_PER_FIELD_Y -1);
 	
+	if( topLeft->val ) {
+		field_update( topLeft );
+	}
+	if( topRight->val ) {
+		field_update( topRight );
+	}
+	if( bottomLeft->val ) {
+		field_update( bottomLeft );
+	}
+	if( bottomRight->val ) {
+		field_update( bottomRight );
+	}
+}
+
+
+
+void board_updateHorizontalMargins(board_t* board)
+{
 	for ( int x = 1; x < board->width / BACTERIA_PER_FIELD_X - 1; x++ ) {
-		field_t* curTop = &board->data[ BOARD_PADDING_X + x + 0 * BOARD_LINE_SKIP(*board) ];
-		field_t* curBottom = &board->data[ BOARD_PADDING_X + x + board->height / BACTERIA_PER_FIELD_Y * BOARD_LINE_SKIP(*board)   ];
+		field_t* curTop =  BOARD_GET_FIELD_PTR(board, x, 0); 
+		field_t* curBottom = BOARD_GET_FIELD_PTR(board, x, board->height / BACTERIA_PER_FIELD_Y - 1); 
 		
 		if(curTop->val){
 			field_update(curTop);
@@ -197,11 +219,13 @@ void board_updateOuterFields(board_t* board)
 			field_update(curBottom);
 		}
 	}
-	
-	
-	for ( int y = 0; y < board->height / BACTERIA_PER_FIELD_Y; y++ ) {
-		field_t* curLeft = &board->data[ BOARD_PADDING_Y + (y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board) ];
-		field_t* curRight = &board->data[ board->width + (y  + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board)  ];
+}
+
+void board_updateVerticalMargins(board_t* board)
+{
+	for ( int y = 1; y < board->height / BACTERIA_PER_FIELD_Y - 1; y++ ) {
+		field_t* curLeft = BOARD_GET_FIELD_PTR(board, 0, y); 
+		field_t* curRight = BOARD_GET_FIELD_PTR(board, board->width / BACTERIA_PER_FIELD_X - 1, y); 
 		
 		if(curLeft->val){
 			field_update(curLeft);
@@ -211,6 +235,9 @@ void board_updateOuterFields(board_t* board)
 		}
 	}
 }
+
+
+
 
 
 

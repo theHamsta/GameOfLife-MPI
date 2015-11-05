@@ -54,6 +54,23 @@ static void field_updateNeighbourCount( field_t* field ) {
 void field_updateWithLut( field_t* field ) {
 	assert ( field_lutsInitialised || "LUTs need to be initialised by field_initLuts!" );
 	
+// 	field_t newField;
+// 	newField.val = (field->val & ~FIELD_ALL_ELEMENTS_MASK);
+// 	
+// 	for ( int i = 0; i < BACTERIA_PER_FIELD_Y; i++ ) {
+// 		uint32_t idx =  (field->val >> (i * FIELD_LINE_WIDTH)) & FIELD_THREE_LINES_MASK;
+// 		
+// 		uint32_t lutIdx = idx / (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X);;
+// 		uint32_t lutShift = (lutIdx % (BITS_IN_UINT32 / BACTERIA_PER_FIELD_X)) * BACTERIA_PER_FIELD_X;
+// 		uint32_t lutRlt = (field_3x6line_lut[ lutIdx ] >> lutShift) & FIELD_LINE_WIDTH_ONES;
+// 		
+// 		newField.val |= (lutRlt << ((i+1) * FIELD_LINE_WIDTH + 1));
+// 	}
+// 	
+// 	newField.bitfield.wasChanged = (newField.val != field->val);
+// 	*field = newField;
+	
+	
 	uint32_t lowLutIdx = field->val & FIELD_THREE_LINES_MASK;
 	uint32_t midLutIdx = (field->val >> FIELD_LINE_WIDTH) & FIELD_THREE_LINES_MASK;
 	uint32_t highLutIdx = (field->val >> (2 * FIELD_LINE_WIDTH)) & FIELD_THREE_LINES_MASK;
@@ -79,11 +96,11 @@ void field_updateWithLut( field_t* field ) {
 
 
 void field_update( field_t* field ) {
-// 	field_t backup = *field;
+	field_t backup = *field;
 	field_updateWithLut(field);
-// 	field_updateNeighbourCount(&backup);
+	field_updateNeighbourCount(&backup);
 	
-// 	assert( backup.val == field->val ); 
+	assert( backup.val == field->val ); 
 }
 
 

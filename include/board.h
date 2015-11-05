@@ -14,6 +14,7 @@
 #define BOARD_LINE_SKIP(BOARD) ((BOARD).width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)
 #define BOARD_PTR_FIRST_FIELD(BOARD) ((BOARD).data + BOARD_PADDING_Y * BOARD_LINE_SKIP(BOARD) + BOARD_PADDING_X)
 
+#define BOARD_GET_FIELD_PTR(BOARD,X,Y) &((BOARD)->data[ ((X) + BOARD_PADDING_X) + ((Y) + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*BOARD) ])
 
 typedef struct board_s
 {
@@ -44,7 +45,13 @@ void board_broadcastNeighbourhoods(board_t* board);
 
 size_t board_getMemoryUsageData(board_t* board);
 
-bool board_value_at( board_t* board, unsigned int x, unsigned int y );
+void board_updateBroadcastVerticalMargins( board_t* board );
+
+void board_updateBroadcastHorizontalMargins( board_t* board );
+
+void board_updateBroadcastCornerFields( board_t* board );
+
+void board_updateInnerFields( board_t* board );
 
 
 #endif // BOARD_H

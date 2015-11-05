@@ -9,6 +9,8 @@
 
 #define END_MASTER_ONLY_SECTION }
 
+
+
 typedef struct globalBoard_s
 {
 	unsigned int global_width;
@@ -24,10 +26,18 @@ typedef struct globalBoard_s
 	unsigned int mpi_sizeX;
 	unsigned int mpi_sizeY;
 	
+	
 	unsigned int neighbourLeft;
 	unsigned int neighbourRight;
 	unsigned int neighbourUp;
 	unsigned int neighbourDown;
+	
+	// diagonal neighbours
+	unsigned int neighbourTL;
+	unsigned int neighbourTR;
+	unsigned int neighbourBL;
+	unsigned int neighbourBR;
+	
 	
 	MPI_Comm mpi_comm;
 	
