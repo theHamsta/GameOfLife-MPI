@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 		board_fillRandomly(board);
 		
 		clock_t start = clock();
-		for( int i = 0; i < NUM_ROUNDS; i++ ) {
+		for( int i = 0; i < numRounds; i++ ) {
 			board_step(board);
 			if(bPrintOutput) {
 				clearScreen();
