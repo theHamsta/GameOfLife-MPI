@@ -9,7 +9,6 @@
 
 
 
-
 #define xstr(s) str(s)
 #define str(s) #s
 
@@ -19,7 +18,7 @@
 
 #define MAGIC_NUMBER 12
 
-#define CHECK_RESULTS
+
 
 void clearScreen() {
 	printf("\e[1;1H\e[2J");
@@ -27,10 +26,7 @@ void clearScreen() {
 
 
 int main(int argc, char** argv) {
-#ifdef NDEBUG
-	printf("Warning NDEBUG defined! Debug mode?\n");
-	fflush(stdout);
-#endif
+
 	
 	int numRounds;
 	int globalBoardWidth;
@@ -50,11 +46,26 @@ int main(int argc, char** argv) {
 	int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 	
+
+	if (world_rank == 1) {
+#ifndef NDEBUG
+		printf("Warning: NDEBUG not defined! Debug mode?\n");
+		fflush(stdout);
+	
+#endif
+#ifdef CHECK_RESULTS
+		printf("CHECK_RESULTS defined!\n");
+		fflush(stdout);
+	
+#endif
+	}
+
+	
 	
 	if( argc != 7 ) {
 		if(world_rank == 0) {
 			printf("Usage:\n"
-				"\t gameoflife 	numRounds globalBoardWidth(in multiples of 4) globalBoardHeight(in multiples of 3) numMpiRankX numMpiRankY bPrintOutput[1 for output]"
+				"\t gameoflife 	numRounds globalBoardWidth(in multiples of "xstr(BACTERIA_PER_FIELD_X)") globalBoardHeight(in multiples of " xstr(BACTERIA_PER_FIELD_Y) ") numMpiRankX numMpiRankY bPrintOutput[1 for output]"
 			);
 		}
 		MPI_Finalize();
@@ -83,6 +94,8 @@ int main(int argc, char** argv) {
 		}
 		
 	}
+
+	
 	
 	if( world_size != numMpiRankX * numMpiRankY ) {
 		if( world_rank == 0 ) {
