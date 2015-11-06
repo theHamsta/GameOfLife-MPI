@@ -1,4 +1,13 @@
-Existem vários maneiras para representar o estado atual do tabuleiro. Elas têm varias vantagens e desvantagens considerando consumação de memoria, utilização dos \textit{caches}, número de acesos necessários para calcular a próxima geração e também no rendimento do algoritmo a ser utilizado. Nesta seção, śo se apresentarão umas dessas possibilidades. Uma discussão mais detalhada das suas propriedades para diferentes aspectos do algoritmo seguirá nas seções seguintes.\\
+Existem vários maneiras de representar o estado atual do tabuleiro. Elas têm varias vantagens e desvantagens considerando consumação de memoria, utilização dos \textit{caches}, número de acessos necessários para calcular a próxima geração e também no rendimento do algoritmo a ser utilizado. Nesta seção, śo se apresentarão umas dessas possibilidades. Uma discussão mais detalhada das suas propriedades para diferentes aspectos do algoritmo seguirá nas seções seguintes.\\
+
+Na representação mais simples, grava-se o estado de cada como matriz de tipo . -consumo memoria, -muitos acessos . melhor um bit por celula
+
+celula + vizinhiança. menos acesso se  nao mudam e menos calcula para se nao ha mudanza
+
+tipo hibrido
 
 
+dynamicos. listas, sparse matrix formats, colonias de bacterias
+
+melhor representaçao: dynamico + viz + mais que uma celula por word
 
