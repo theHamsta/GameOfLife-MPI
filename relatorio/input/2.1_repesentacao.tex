@@ -1,6 +1,20 @@
 Existem vários maneiras de representar o estado atual do tabuleiro. Elas têm varias vantagens e desvantagens considerando consumação de memoria, utilização dos \textit{caches}, número de acessos necessários para calcular a próxima geração e também no rendimento do algoritmo a ser utilizado. Nesta seção, śo se apresentarão umas dessas possibilidades. Uma discussão mais detalhada das suas propriedades para diferentes aspectos do algoritmo seguirá nas seções seguintes.\\
 
-Na representação mais simples, grava-se o estado de cada como matriz de tipo . -consumo memoria, -muitos acessos . melhor um bit por celula
+\subsubsection{Representação explícita}
+Na representação mais simples, grava-se o estados das células numa matriz de tipo \textit{byte}. Cada \textit{byte} pode assumir os valores 0 e 1, ou seja vivo e morto. Obviamente, este método não muito é eficiente, já que sete \textit{bit} permanecem não usados. Além disso, precisa-se nove acessos à memória\footnote{Ou Três, reutilizando \textit{bytes} já lidos} para determinar e um acesso para gravar o próximo estado de cada célula. Para evitar ditas desvantagens, pode-se usar um \textit{bit} só por estado a ser gravado. De este modo, é possível ler mais que uma célula vez, dependendo do tamanho dos registros do CPU. Outra ventagem é a possibilidade de usar instruções lógicas ou explícitas para contar o numero de vizinhos vivos tal como usar os \textit{bits} diretamente como índex de um \textit{Look Up Table (LUT)} para averiguar o destino de vários células à vez.\\
+
+\subsubsection{Representação explícita com informações sobre a vizinhança}
+Embora um \textit{bit} por célula seja o modo mais compacto de gravar o tabuleiro, existem técnicas que introduzem mais redundância para acelerar possíveis algoritmos. Uma possibilidade é armazenar vizinhança junta com o estados atuais. Isso basa-se na heurística que a maioria das células não muda numa ronda do jogo. De tal forma, pode-se avançar rapidamente por grandes partes do tabuleiro utilizando poucas operações simples. Por outro lado, será preciso uma atualização das vizinhanças em caso de células que mudam o seu estado.\\
+
+A implementação apresentado usa a seguinte
+
+\subsubsection{Representações implícitas}
+
+- sparse matrix
+- listas
+- quad-trees
+
+
 
 celula + vizinhiança. menos acesso se  nao mudam e menos calcula para se nao ha mudanza
 
