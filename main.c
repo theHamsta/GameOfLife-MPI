@@ -17,15 +17,6 @@
 #include "global_board.h"
 
 
-
-#define GLOBAL_BOARD_WIDTH 4*9
-#define GLOBAL_BOARD_HEIGHT 3*9
-#define NUM_ROUNDS 100
-#define GRAPHICAL_OUTPUT true
-
-#define NUM_MPI_RANKS_X 3
-#define NUM_MPI_RANKS_Y 3
-
 #define MAGIC_NUMBER 12
 
 
@@ -73,7 +64,7 @@ int main(int argc, char** argv) {
 		int numVars = 0;
 		// some how first call of sscanf always reads 0. wtf?
 		sscanf(argv[5],"%i" , &numMpiRankY);
-		// these calls return the right results
+		// these calls should return the right results
 		numVars += sscanf(argv[1],"%i" , &numRounds);
 		numVars += sscanf(argv[2],"%i" , &globalBoardWidth);
 		numVars += sscanf(argv[3],"%i" , &globalBoardHeight);
