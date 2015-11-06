@@ -11,7 +11,7 @@
 
 #define BOARD_PADDING_X (1)
 #define BOARD_PADDING_Y (1)
-#define BOARD_LINE_SKIP(BOARD) ((BOARD).width / BACTERIA_PER_FIELD_X + 2 * BOARD_PADDING_X)
+#define BOARD_LINE_SKIP(BOARD) ((BOARD).widthDiv4 + 2 * BOARD_PADDING_X)
 #define BOARD_PTR_FIRST_FIELD(BOARD) ((BOARD).data + BOARD_PADDING_Y * BOARD_LINE_SKIP(BOARD) + BOARD_PADDING_X)
 
 #define BOARD_GET_FIELD_PTR(BOARD,X,Y) (&((BOARD)->data[ ((X) + BOARD_PADDING_X) + ((Y) + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*BOARD) ]))
@@ -20,8 +20,8 @@
 
 typedef struct board_s
 {
-	unsigned int width;
-	unsigned int height;
+	unsigned int widthDiv4;
+	unsigned int heightDiv3;
 	
 	field_t* data;
 } board_t;

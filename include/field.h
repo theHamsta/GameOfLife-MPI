@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 
-#define BACTERIA_PER_FIELD_X (4)
-#define BACTERIA_PER_FIELD_Y (3)
+#define BACTERIA_PER_FIELD_X 4
+#define BACTERIA_PER_FIELD_Y 3
 #define BACTERIA_PER_FIELD   (BACTERIA_PER_FIELD_X * BACTERIA_PER_FIELD_Y)
 
 
