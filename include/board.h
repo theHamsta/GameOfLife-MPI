@@ -47,11 +47,12 @@ void board_broadcastNeighbourhoods(board_t* board);
 
 size_t board_getMemoryUsageData(board_t* board);
 
-void board_updateBroadcastVerticalMargins( board_t* board );
+void board_updateVerticalMargins( board_t* board );
 
-void board_updateBroadcastHorizontalMargins( board_t* board );
 
-void board_updateBroadcastCornerFields( board_t* board );
+void board_updateHorizontalMargins( board_t* board );
+
+void board_updateCornerFields( board_t* board );
 
 void board_updateInnerFields( board_t* board );
 

@@ -22,6 +22,7 @@
 #define GBOARD_LEFT_BUF_ELEMENTS(BOARD) ( (BOARD).heightDiv3)
 #define GBOARD_RIGHT_BUF_ELEMENTS(BOARD) GBOARD_LEFT_BUF_ELEMENTS(BOARD)
 
+#define CHECK_RESULTS
 
 
 #ifdef CHECK_RESULTS
@@ -375,17 +376,23 @@ void globalBoard_step(globalBoard_t* board)
 	
 
 
-	board_updateFields(board->local_board);
+// 	board_updateFields(board->local_board);
+// 	board_broadcastNeighbourhoods(board->local_board);
+// 	
+// 	globalBoard_sendNeighbours(board);
+// 	globalBoard_recvNeighbours(board);	
+// 	globalBoard_processRecv(board);
+	
+	
 	board_broadcastNeighbourhoods(board->local_board);
 	
 	globalBoard_sendNeighbours(board);
 	globalBoard_recvNeighbours(board);	
+	board_updateInnerFields(board->local_board);
 	globalBoard_processRecv(board);
-	
-	MPI_Barrier(board->mpi_comm);
-
-	
-	
+	board_updateCornerFields(board->local_board);
+	board_updateHorizontalMargins(board->local_board);
+	board_updateVerticalMargins(board->local_board);
 }
 
 

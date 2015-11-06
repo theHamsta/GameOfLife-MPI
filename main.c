@@ -7,7 +7,7 @@
 #include <time.h>
 #include <unistd.h>
 
-
+#define CHECK_RESULTS
 
 #define xstr(s) str(s)
 #define str(s) #s
@@ -18,6 +18,9 @@
 
 #define MAGIC_NUMBER 12
 
+#ifdef CHECK_RESULTS_DURING_RUN
+#define CHECK_RESULTS
+#endif
 
 
 void clearScreen() {
@@ -58,6 +61,11 @@ int main(int argc, char** argv) {
 		fflush(stdout);
 	
 #endif
+#ifdef CHECK_RESULTS_DURING_RUN
+		printf("CHECK_RESULTS_DURING_RUN defined!\n");
+		fflush(stdout);
+	
+#endif
 	}
 
 	
@@ -94,8 +102,6 @@ int main(int argc, char** argv) {
 		}
 		
 	}
-
-	
 	
 	if( world_size != numMpiRankX * numMpiRankY ) {
 		if( world_rank == 0 ) {
@@ -166,7 +172,7 @@ int main(int argc, char** argv) {
 		globalBoard_t* gBoard = globalBoard_create(globalBoardWidth, globalBoardHeight,  world_rank, numMpiRankX, numMpiRankY);
 		
 		globalBoard_fillRandomly(gBoard);
-#ifdef CHECK_RESULTS
+#if  defined(CHECK_RESULTS) || defined(CHECK_RESULTS_DURING_RUN)
 		
 		board_t* checkResultsBoard = globalBoard_uniteLocalBoards(gBoard);
 
@@ -179,13 +185,13 @@ int main(int argc, char** argv) {
 		for ( int i = 0; i < numRounds; i++ ) {
 
 			globalBoard_step(gBoard);
-#ifdef CHECK_RESULTS
+#ifdef CHECK_RESULTS_DURING_RUN
 			board_step(checkResultsBoard);
 #endif
 			if(bPrintOutput) {
 				clearScreen();
 				globalBoard_print(gBoard);
-#ifdef CHECK_RESULTS
+#ifdef CHECK_RESULTS_DURING_RUN
 				if( world_rank == 0 ) {
 					board_print(checkResultsBoard);
 				}
@@ -193,7 +199,7 @@ int main(int argc, char** argv) {
 				usleep(100000);  	
 			}
 			
-#ifdef CHECK_RESULTS
+#ifdef CHECK_RESULTS_DURING_RUN
 				
 
 				board_t* calculatedBoard = globalBoard_uniteLocalBoards(gBoard);
@@ -217,7 +223,27 @@ int main(int argc, char** argv) {
 		MPI_Barrier(gBoard->mpi_comm);
 
 		end = MPI_Wtime();
-		
+#ifdef CHECK_RESULTS
+		board_t* calculatedBoard = globalBoard_uniteLocalBoards(gBoard);
+		if(world_rank == 1){
+			for (int i = 0; i < numRounds; i++ ) {
+				board_step(checkResultsBoard);
+			}
+			for (int y = 0; y < calculatedBoard->heightDiv3; y++ ) {
+				for ( int x = 0; x < calculatedBoard->widthDiv4; x++ ) {
+					if ( (BOARD_GET_FIELD_PTR(calculatedBoard, x,y)->val ) != (BOARD_GET_FIELD_PTR(checkResultsBoard, x,y)->val )) {
+						board_printDebug(calculatedBoard);
+						board_printDebug(checkResultsBoard);
+						printf("error at (%i,%i)\n", x, y);
+						field_printDebugAllLines(BOARD_GET_FIELD_PTR(calculatedBoard, x,y));
+						field_printDebugAllLines(BOARD_GET_FIELD_PTR(checkResultsBoard, x,y));
+						exit( EXIT_SUCCESS );
+					}
+				}
+			}
+			
+		}
+#endif
 
 		
 		globalBoard_destroy(gBoard);
