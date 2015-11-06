@@ -22,6 +22,14 @@
 #define GBOARD_LEFT_BUF_ELEMENTS(BOARD) ( (BOARD).heightDiv3)
 #define GBOARD_RIGHT_BUF_ELEMENTS(BOARD) GBOARD_LEFT_BUF_ELEMENTS(BOARD)
 
+#define CHECK_RESULTS
+
+#ifdef CHECK_RESULTS
+#define PERIODIC_BOUNDARY (false)
+#else
+#define PERIODIC_BOUNDARY (true)
+#endif
+
 
 typedef enum messageDirection_e{
 	DIRECTION_UP, DIRECTION_DOWN, DIRECTION_LEFT, DIRECTION_RIGHT, DIRECTION_TL, DIRECTION_TR, DIRECTION_BL, DIRECTION_BR
@@ -31,14 +39,7 @@ typedef enum courners_e{
 	COURNER_TL, COURNER_TR, COURNER_BL, COURNER_BR
 } courners_t;
 
-void field_broadcastLeft( field_t* field, field_t* neighbour );
-void field_broadcastTopLeft( field_t* field, field_t* neighbour );
-void field_broadcastTop( field_t* field, field_t* neighbour );
-void field_broadcastTopRight( field_t* field, field_t* neighbour );
-void field_broadcastRight( field_t* field, field_t* neighbour );
-void field_broadcastBottomRight( field_t* field, field_t* neighbour );
-void field_broadcastBottom( field_t* field, field_t* neighbour );
-void field_broadcastBottomLeft( field_t* field, field_t* neighbour );
+
 
 
 
@@ -315,46 +316,56 @@ void globalBoard_processRecv( globalBoard_t* board ) {
 	
 
 	MPI_Waitall(GBOARD_NUM_PERPENDICULAR_DIRECTIONS, board->reqRecv, MPI_STATUS_IGNORE);
+	MPI_Waitall(GBOARD_NUM_PERPENDICULAR_DIRECTIONS, board->reqSend, MPI_STATUS_IGNORE);
 	
 	board_t* b = board->local_board;
 	for( int x = 0; x < GBOARD_UP_BUF_ELEMENTS(*b); x++ ) {
-		
+		if ( PERIODIC_BOUNDARY || board->mpi_rankY != 0 ) {
 			b->data[x + BOARD_PADDING_X + BOARD_LINE_SKIP(*b) * BOARD_PADDING_Y].val &= 
 				~(FIELD_ALL_NEIGHBOURS_TOP_MASK  | FIELD_ALL_NEIGHBOURS_TOP_RIGHT_MASK | FIELD_ALL_NEIGHBOURS_TOP_LEFT_MASK);
 			b->data[x + BOARD_PADDING_X + BOARD_LINE_SKIP(*b) * BOARD_PADDING_Y].val |= board->recvBufUp[x].val ;
-
+		}
+		if ( PERIODIC_BOUNDARY || board->mpi_rankY != board->mpi_sizeY - 1 ){
+			
 			b->data[x + BOARD_PADDING_X + ( b->heightDiv3 ) * BOARD_LINE_SKIP(*b)].val &= ~(FIELD_ALL_NEIGHBOURS_BOTTOM_MASK | FIELD_ALL_NEIGHBOURS_BOTTOM_LEFT_MASK | FIELD_ALL_NEIGHBOURS_BOTTOM_RIGHT_MASK);
 			b->data[x + BOARD_PADDING_X + ( b->heightDiv3 ) * BOARD_LINE_SKIP(*b)].val |= board->recvBufDown[x].val;
-
+		}
 	}
 	
 	for( int y = 0; y < GBOARD_LEFT_BUF_ELEMENTS(*board->local_board); y++ ) {
-	
+		if ( PERIODIC_BOUNDARY || board->mpi_rankX != 0 ) {
+			
 			board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) + BOARD_PADDING_X].val &= 
 				~(FIELD_ALL_NEIGHBOURS_LEFT_MASK | FIELD_ALL_NEIGHBOURS_TOP_LEFT_MASK | FIELD_ALL_NEIGHBOURS_BOTTOM_LEFT_MASK);
 			board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) + BOARD_PADDING_X].val |= board->recvBufLeft[y].val;
-
-			
+		}
+		if ( PERIODIC_BOUNDARY || board->mpi_rankX != board->mpi_sizeX - 1) {	
 			board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) + board->local_board->widthDiv4].val &= ~(FIELD_ALL_NEIGHBOURS_RIGHT_MASK | FIELD_ALL_NEIGHBOURS_TOP_RIGHT_MASK | FIELD_ALL_NEIGHBOURS_BOTTOM_RIGHT_MASK);
 			board->local_board->data[(y + BOARD_PADDING_Y) * BOARD_LINE_SKIP(*board->local_board) + board->local_board->widthDiv4].val |= board->recvBufRight[y].val;
-
+		}
 	}
 	
 	MPI_Waitall(GBOARD_NUM_PERPENDICULAR_DIRECTIONS, board->reqRecv + GBOARD_NUM_PERPENDICULAR_DIRECTIONS, MPI_STATUS_IGNORE);
-	
+	MPI_Waitall(GBOARD_NUM_PERPENDICULAR_DIRECTIONS, board->reqSend + GBOARD_NUM_PERPENDICULAR_DIRECTIONS, MPI_STATUS_IGNORE);
 
-	
-	BOARD_GET_FIELD_PTR(b, 0, 0)->val &= ~FIELD_ALL_NEIGHBOURS_TOP_LEFT_MASK; 
-	BOARD_GET_FIELD_PTR(b, 0, 0)->val |= board->recvBufCourners[COURNER_TL].val;
+	if( PERIODIC_BOUNDARY ||  !(board->mpi_rankX == 0 || board->mpi_rankY == 0)) {
+		BOARD_GET_FIELD_PTR(b, 0, 0)->val &= ~FIELD_ALL_NEIGHBOURS_TOP_LEFT_MASK; 
+		BOARD_GET_FIELD_PTR(b, 0, 0)->val |= board->recvBufCourners[COURNER_TL].val;
+	}
 
-	BOARD_GET_FIELD_PTR(b, b->widthDiv4 - 1, 0)->val &= ~FIELD_ALL_NEIGHBOURS_TOP_RIGHT_MASK; 
-	BOARD_GET_FIELD_PTR(b, b->widthDiv4 - 1, 0)->val |= board->recvBufCourners[COURNER_TR].val;
+	if( PERIODIC_BOUNDARY || !(board->mpi_rankX == board->mpi_sizeX - 1 || board->mpi_rankY == 0)) {
+		BOARD_GET_FIELD_PTR(b, b->widthDiv4 - 1, 0)->val &= ~FIELD_ALL_NEIGHBOURS_TOP_RIGHT_MASK; 
+		BOARD_GET_FIELD_PTR(b, b->widthDiv4 - 1, 0)->val |= board->recvBufCourners[COURNER_TR].val;
+	}
 	
-	BOARD_GET_FIELD_PTR(b, 0, b->heightDiv3 - 1)->val &= ~FIELD_ALL_NEIGHBOURS_BOTTOM_LEFT_MASK; 
-	BOARD_GET_FIELD_PTR(b, 0, b->heightDiv3- 1)->val |= board->recvBufCourners[COURNER_BL].val;
-	
-	BOARD_GET_FIELD_PTR(b, b->widthDiv4 - 1, b->heightDiv3 - 1)->val &= ~FIELD_ALL_NEIGHBOURS_BOTTOM_RIGHT_MASK; 
-	BOARD_GET_FIELD_PTR(b, b->widthDiv4 - 1, b->heightDiv3 - 1)->val |= board->recvBufCourners[COURNER_BR].val;
+	if( PERIODIC_BOUNDARY || !(board->mpi_rankX == 0 || board->mpi_rankY == board->mpi_sizeY - 1)) {
+		BOARD_GET_FIELD_PTR(b, 0, b->heightDiv3 - 1)->val &= ~FIELD_ALL_NEIGHBOURS_BOTTOM_LEFT_MASK; 
+		BOARD_GET_FIELD_PTR(b, 0, b->heightDiv3- 1)->val |= board->recvBufCourners[COURNER_BL].val;
+	}
+	if( PERIODIC_BOUNDARY || !((board->mpi_rankX == board->mpi_sizeX - 1) || (board->mpi_rankY == board->mpi_sizeY - 1))) {
+		BOARD_GET_FIELD_PTR(b, b->widthDiv4 - 1, b->heightDiv3 - 1)->val &= ~FIELD_ALL_NEIGHBOURS_BOTTOM_RIGHT_MASK; 
+		BOARD_GET_FIELD_PTR(b, b->widthDiv4 - 1, b->heightDiv3 - 1)->val |= board->recvBufCourners[COURNER_BR].val;
+	}
 }
 
 
@@ -507,8 +518,8 @@ void globalBoard_fillRandomly(globalBoard_t* board)
 
 	
 	MPI_Barrier(board->mpi_comm);
-	globalBoard_sendNeighbours(board);
-	globalBoard_recvNeighbours(board);
+ 	globalBoard_sendNeighbours(board);
+ 	globalBoard_recvNeighbours(board);
 	globalBoard_processRecv(board);	
 	MPI_Barrier(board->mpi_comm);
 }

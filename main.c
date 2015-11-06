@@ -19,7 +19,7 @@
 
 #define MAGIC_NUMBER 12
 
-
+#define CHECK_RESULTS
 
 void clearScreen() {
 	printf("\e[1;1H\e[2J");
@@ -53,7 +53,6 @@ int main(int argc, char** argv) {
 	
 	if( argc != 7 ) {
 		if(world_rank == 0) {
-			printf("%i\n", argc);
 			printf("Usage:\n"
 				"\t gameoflife 	numRounds globalBoardWidth(in multiples of 4) globalBoardHeight(in multiples of 3) numMpiRankX numMpiRankY bPrintOutput[1 for output]"
 			);
@@ -63,17 +62,19 @@ int main(int argc, char** argv) {
 	} else {
 		int numVars = 0;
 		// some how first call of sscanf always reads 0. wtf?
-		sscanf(argv[5],"%i" , &numMpiRankY);
+// 		sscanf(argv[5],"%i" , &numRounds);
+		
 		// these calls should return the right results
-		numVars += sscanf(argv[1],"%i" , &numRounds);
+			numVars += sscanf(argv[2],"%i" , &numRounds);
+		
 		numVars += sscanf(argv[2],"%i" , &globalBoardWidth);
 		numVars += sscanf(argv[3],"%i" , &globalBoardHeight);
 		numVars += sscanf(argv[4],"%i" , &numMpiRankX);
 		numVars += sscanf(argv[5],"%i" , &numMpiRankY);
 		numVars += sscanf(argv[6],"%i" , &bPrintOutput);
-
+		numVars += sscanf(argv[1],"%i" , &numRounds);
 		
-		if(numVars != 6){
+		if(numVars != 7){
 			if( world_rank == 0 ) {
 				printf("Error parsing arguments!\n");
 			}
@@ -112,6 +113,8 @@ int main(int argc, char** argv) {
 	}
 
 
+	
+	
 
 	field_initLuts();
 
@@ -134,6 +137,14 @@ int main(int argc, char** argv) {
 		
 		printf("\n%fs\n", seconds);
 		
+	} else if ( numMpiRankX == 1 && numMpiRankY == 1 ) {
+		if(world_rank == 0) {
+
+			printf("This programme version cannot handle 1d MPI Cartesian coordinates. Both numMpiRankX and numMpiRankY must be greater than 1 or both equal to 1.\n"
+			);
+		}
+		MPI_Finalize();
+		exit( EXIT_SUCCESS );
 	} else {
 
 
@@ -142,23 +153,59 @@ int main(int argc, char** argv) {
 		globalBoard_t* gBoard = globalBoard_create(globalBoardWidth, globalBoardHeight,  world_rank, numMpiRankX, numMpiRankY);
 		
 		globalBoard_fillRandomly(gBoard);
+#ifdef CHECK_RESULTS
 		
+		board_t* checkResultsBoard = globalBoard_uniteLocalBoards(gBoard);
+
+#endif		
 
 		MPI_Barrier(gBoard->mpi_comm);
+		
 		start = MPI_Wtime();
 		
 		for ( int i = 0; i < numRounds; i++ ) {
 
 			globalBoard_step(gBoard);
-			
+#ifdef CHECK_RESULTS
+			board_step(checkResultsBoard);
+#endif
 			if(bPrintOutput) {
 				clearScreen();
 				globalBoard_print(gBoard);
-				usleep(100000);  		
+#ifdef CHECK_RESULTS
+				if( world_rank == 0 ) {
+					board_print(checkResultsBoard);
+				}
+#endif 
+				usleep(100000);  	
 			}
+			
+#ifdef CHECK_RESULTS
+				
+
+				board_t* calculatedBoard = globalBoard_uniteLocalBoards(gBoard);
+				if( world_rank == 0 ) {
+
+					for (int y = 0; y < calculatedBoard->heightDiv3; y++ ) {
+						for ( int x = 0; x < calculatedBoard->widthDiv4; x++ ) {
+							if ( (BOARD_GET_FIELD_PTR(calculatedBoard, x,y)->val ) != (BOARD_GET_FIELD_PTR(checkResultsBoard, x,y)->val )) {
+								board_printDebug(calculatedBoard);
+								board_printDebug(checkResultsBoard);
+								printf("%i, (%i,%i)\n", i, x, y);
+								field_printDebugAllLines(BOARD_GET_FIELD_PTR(calculatedBoard, x,y));
+								field_printDebugAllLines(BOARD_GET_FIELD_PTR(checkResultsBoard, x,y));
+								exit( EXIT_SUCCESS );
+							}
+						}
+					}
+				}
+#endif
 		}
 		MPI_Barrier(gBoard->mpi_comm);
+
 		end = MPI_Wtime();
+		
+
 		
 		globalBoard_destroy(gBoard);
 		
