@@ -1,27 +1,53 @@
 Existem vários maneiras de representar o estado atual do tabuleiro. Elas têm varias vantagens e desvantagens considerando consumação de memoria, utilização dos \textit{caches}, número de acessos necessários para calcular a próxima geração e também no rendimento do algoritmo a ser utilizado. Nesta seção, śo se apresentarão umas dessas possibilidades. Uma discussão mais detalhada das suas propriedades para diferentes aspectos do algoritmo seguirá nas seções seguintes.\\
 
-\subsubsection{Representação explícita}
+\subsubsection{Representação Explícita}
 Na representação mais simples, grava-se o estados das células numa matriz de tipo \textit{byte}. Cada \textit{byte} pode assumir os valores 0 e 1, ou seja vivo e morto. Obviamente, este método não muito é eficiente, já que sete \textit{bit} permanecem não usados. Além disso, precisa-se nove acessos à memória\footnote{Ou Três, reutilizando \textit{bytes} já lidos} para determinar e um acesso para gravar o próximo estado de cada célula. Para evitar ditas desvantagens, pode-se usar um \textit{bit} só por estado a ser gravado. De este modo, é possível ler mais que uma célula vez, dependendo do tamanho dos registros do CPU. Outra ventagem é a possibilidade de usar instruções lógicas ou explícitas para contar o numero de vizinhos vivos tal como usar os \textit{bits} diretamente como índex de um \textit{Look Up Table (LUT)} para averiguar o destino de vários células à vez.\\
 
-\subsubsection{Representação explícita com informações sobre a vizinhança}
-Embora um \textit{bit} por célula seja o modo mais compacto de gravar o tabuleiro, existem técnicas que introduzem mais redundância para acelerar possíveis algoritmos. Uma possibilidade é armazenar vizinhança junta com o estados atuais. Isso basa-se na heurística que a maioria das células não muda numa ronda do jogo. De tal forma, pode-se avançar rapidamente por grandes partes do tabuleiro utilizando poucas operações simples. Por outro lado, será preciso uma atualização das vizinhanças em caso de células que mudam o seu estado.\\
+\subsubsection{Representação Explícita com Informações sobre a Vizinhança}
+Embora um \textit{bit} por célula seja o modo mais compacto de gravar o tabuleiro, existem técnicas que introduzem mais redundância para acelerar possíveis algoritmos. Uma possibilidade é armazenar vizinhança junta com o estados atuais. Isso basa-se na heurística que a maioria das células não muda numa ronda do jogo. De tal forma, pode-se avançar rapidamente por grandes partes do tabuleiro utilizando poucas operações simples. Por outro lado, será preciso uma atualização das vizinhanças em caso de células que mudam o seu estado. Também acresce o consumo de memória: 9 bit por cada célula, devido ao armazenamento redundante.\\
 
-A implementação apresentado usa a seguinte
 
-\subsubsection{Representações implícitas}
+\subsubsection{Representações Implícitas}
 
 - sparse matrix
 - listas
 - quad-trees
 
+\subsubsection{Representação Usada}
 
+\begin{figure}[h]
+\centering
 
-celula + vizinhiança. menos acesso se  nao mudam e menos calcula para se nao ha mudanza
+\begin{tikzpicture}[darkstyle/.style={draw,fill=gray!40,minimum size=20},lightstyle/.style={draw,fill=gray!20,minimum size=20}, whitestyle/.style={draw,minimum size=20}]
+  \foreach \x in {0,...,5}
+    \foreach \y in {0,...,4} 
+{\pgfmathtruncatemacro{\label}{\x - 6 *  \y +24}
+\pgfmathtruncatemacro{\xnew}{5-\x}
+\pgfmathtruncatemacro{\ynew}{4-\y}
 
-tipo hibrido
+\ifthenelse{\x > 0 \and \x < 5 \and \y > 0 \and \y < 4}{
+       \node [darkstyle]  (\x\y) at (0.8*\xnew,0.8*\ynew)
+       }{
+       \node [lightstyle]  (\x\y) at (0.8*\xnew,0.8*\ynew)
+       } {\label};} 
+       
+   \node[whitestyle] (30) at (-2,0) {30};
+   
+   \node[whitestyle] (31) at (-2.8,0) {31};
+   \node[text width=1cm, align=center] (unused) at (-2, 1.2) {\textsf{Não usado}};
+   \node (waschanged) at (-2.8, 2) {\textsf{Indicador de Mudança}};
+   \node[fill=gray!20] (viz) at (6, 2) {\textsf{Vizinhança}};
+   \node[fill=gray!40] (cel) at (5.5, 0.3) {\textsf{Células}};
+   
+   \draw[->, line width=2] (unused) -- (30);
+   \draw[->, line width=2] (waschanged) -- (31);
+    \draw[->, line width=2] (viz) -- (01.east);
+   \draw[->, line width=2] (cel) -- (22.south east);
+   
+\end{tikzpicture}
+\caption{Representação de um grupo de doze células com 32 bit }
+\label{fig:representacao}
+\end{figure}
 
-
-dynamicos. listas, sparse matrix formats, colonias de bacterias
-
-melhor representaçao: dynamico + viz + mais que uma celula por word
+Para a implementação aqui apresentada, gravaram-se grupos de 3x4 células juntas com a sua vizinhança em uma palavra de 32 bit, segundo figura \ref{fig:representacao}. O tabuleiro está representado explicitadamente, aliás se. As rezões por essa escolha serão explicados na próxima seção.
 
