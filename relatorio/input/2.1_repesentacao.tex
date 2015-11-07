@@ -4,7 +4,7 @@ Existem vários maneiras de representar o estado atual do tabuleiro. Elas têm v
 Na representação mais simples, grava-se o estados das células numa matriz de tipo \textit{byte}. Cada \textit{byte} pode assumir os valores 0 e 1, ou seja vivo e morto. Obviamente, este método não muito é eficiente, já que sete \textit{bit} permanecem não usados. Além disso, precisa-se nove acessos à memória\footnote{Ou Três, reutilizando \textit{bytes} já lidos} para determinar e um acesso para gravar o próximo estado de cada célula. Para evitar ditas desvantagens, pode-se usar um \textit{bit} só por estado a ser gravado. De este modo, é possível ler mais que uma célula vez, dependendo do tamanho dos registros do CPU. Outra ventagem é a possibilidade de usar instruções lógicas ou explícitas para contar o numero de vizinhos vivos tal como usar os \textit{bits} diretamente como índex de um \textit{Look Up Table (LUT)} para averiguar o destino de vários células à vez.\\
 
 \subsubsection{Representação Explícita com Informações sobre a Vizinhança}
-Embora um \textit{bit} por célula seja o modo mais compacto de gravar o tabuleiro, existem técnicas que introduzem mais redundância para acelerar possíveis algoritmos. Uma possibilidade é armazenar vizinhança junta com o estados atuais. Isso basa-se na heurística que a maioria das células não muda numa ronda do jogo. De tal forma, pode-se avançar rapidamente por grandes partes do tabuleiro utilizando poucas operações simples. Por outro lado, será preciso uma atualização das vizinhanças em caso de células que mudam o seu estado. Também acresce o consumo de memória: 9 bit por cada célula, devido ao armazenamento redundante.\\
+Embora um \textit{bit} por célula seja o modo mais compacto de gravar o tabuleiro, existem técnicas que introduzem mais redundância para acelerar possíveis algoritmos. Uma possibilidade é armazenar vizinhança junta com o estados atuais. Isso basa-se na heurística que a maioria das células não muda numa ronda do jogo. De tal forma, pode-se avançar rapidamente por grandes partes do tabuleiro utilizando poucas operações simples. Por outro lado, será preciso uma atualização das vizinhanças em caso das células que mudam o seu estado. Também cresce o consumo de memória: 9 bit por cada célula, devido ao armazenamento redundante.\\
 
 
 \subsubsection{Representações Implícitas}
@@ -49,5 +49,5 @@ Embora um \textit{bit} por célula seja o modo mais compacto de gravar o tabulei
 \label{fig:representacao}
 \end{figure}
 
-Para a implementação aqui apresentada, gravaram-se grupos de 3x4 células juntas com a sua vizinhança em uma palavra de 32 bit, segundo figura \ref{fig:representacao}. O tabuleiro está representado explicitadamente, aliás se. As rezões por essa escolha serão explicados na próxima seção.
+Para a implementação aqui apresentada, gravaram-se grupos de 3x4 células (3 linhas horizontais com 4 colunas) juntas com a sua vizinhança em uma palavra de 32 bit, segundo figura \ref{fig:representacao}. O tabuleiro está representado explicitadamente, aliás como matriz de células vivas e mortas. As rezões por essa escolha serão explicados na próxima seção.
 
