@@ -7,7 +7,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define CHECK_RESULTS
+
 
 #define xstr(s) str(s)
 #define str(s) #s
@@ -248,8 +248,23 @@ int main(int argc, char** argv) {
 		
 		globalBoard_destroy(gBoard);
 		
-		if ( world_rank == 0 )
-			printf("\n%fs\n", end-start);
+		if ( world_rank == 0 ) {
+			printf( "\n%fs\n", end-start);
+			FILE *f = fopen("file.txt", "w");
+			if (f == NULL)
+			{
+				printf("Error opening file!\n");
+				exit(1);
+			}
+			
+			
+			fprintf(f, "\n%fs\n", end-start);
+			
+		
+			
+			fclose(f);
+			
+		}
 	}
 	
 // 	field_initLuts();
