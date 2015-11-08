@@ -1,8 +1,10 @@
-- fatias e retangulos
-- colonias de baterias
+\label{sec:distribuicao}
 
-comunicacao  nas margens, no 
+Usa-se o MPI em situações em que tamanho do problema ultrapassar a capacidade de uma maquina a tratar o mesmo. Portanto, é importante achar um jeito para dividir o problema em subproblemas que podem ser solucionados separadamente em paralela com o um mínimo de comunicação e sincronização entre os diferentes processos. Além disso, deve-se realizar a comunicação inevitável de forma paralela à computações. \\
 
-formato das mensagens: comprimido ou sem tratamento (menos calculo)
+No caso de uma representação explícita das células, aquela formação de subunidades pode ser feito facilmente por divisão do tabuleiro global em fatias o retângulos locais do mesmo tamanho. A desvantagem das fatias, em comparação com quadrados, é uma superfície muito maior, que precisa de intercâmbio de dados entre os processos. Porém, a comunicação é mais simples, já que só dois vizinhos precisam ser considerados em vez de oito.\\
 
-como evitar comunicacoes
+A implementação realiza uma divisão estática em retângulos. Os bordos criados por o algoritmo local na seção \ref{sec:algoritmo} são utilizados como mensagem a ser enviada aos respetivos vizinhos. Isso é o método que requer menos computação. Versões futuros do programa poderia compactar aquelas mensagens de tal forma que só se transmita as colunas ou filas dos unidades que tem mudado. Outra melhoria pode ser realizado em enviar células interiores como as mais cercanas ao borde com o objetivo de fazer mais que uma iteração entre as mensagens.\\
+
+Em realizações mais dinâmicas que se basem em manter diferentes colonias de bactérias. Precisa-se de processo \textit{master} que impede incongruências em caso de encontro de duas colonias. Os processos
+
