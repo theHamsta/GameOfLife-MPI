@@ -276,10 +276,7 @@ void board_fillRandomly(board_t* board)
 	
 }
 
-bool board_value_at(board_t* board, unsigned int x, unsigned int y)
-{
-	assert( false && "NOT IMPLEMENTED" );
-}
+
 
 void board_step(board_t* board)
 {

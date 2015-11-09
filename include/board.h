@@ -49,7 +49,6 @@ size_t board_getMemoryUsageData(board_t* board);
 
 void board_updateVerticalMargins( board_t* board );
 
-
 void board_updateHorizontalMargins( board_t* board );
 
 void board_updateCornerFields( board_t* board );
