@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 	
 
-	if (world_rank == 1) {
+	if (world_rank == 0) {
 #ifndef NDEBUG
 		printf("Warning: NDEBUG not defined! Debug mode?\n");
 		fflush(stdout);
