@@ -1,3 +1,5 @@
-- fatias, retangulos dinamicas
-- troco de entidades mais pequenas
-- comunicacao com vizinhas ou master
+Em a implementação desse trabalho, não se usa um mecanismo de balançamento de carga. O algoritmo está adaptada para trabalhar com retângulo relativamente grandes com uma distribuição homógena de bactérias. Assuma-se que carga não variará tanto e será no promédio mais ou menos igual em cada retângulo.\\
+
+Possibilidades para realizar uma balança podem ser organizados de maneira central ou local. Se houver uma grande desbalança seria melhor organizar esse controle por processo \textit{master} que mede depois de um número determinado de iterações a carga de cada CPU. Em caso de inigualdades locais, aquela tarefa também pode ser realizado por comunicação entre vizinhos. O processo que estiver esperando uma mensagem, poderia estimar pelo tempo de espera a desbalança entre seu vizinho e ele mesmo para oferecer que o vizinho deixasse uma parta do seu trabalho. De qualquer modo, favorece uma organização em entidades pequenas uma equilibração melhor por custe de mais comunicação.\\
+
+As entidades a ser intercambiadas dependem da organização do algoritmo. No caso do método utilizado com uma divisão do tabuleiro em subretãngulos, aquelas entidades podem ser de retângulos se cada processo está mantendo vários deles. Do mesmo modo, pode-se trabalhar localmente de tal forma que um processo com carga demais alta decrescerá seu retângulo por uma fatia à esquerda ou direita, possivelmente dividindo em uma posição com poucas bactérias nesta coluna. Essa seção deveria ser comunicado aos vizinhos por em cima e debaixo com atenção que o número de parceiros de comunicação se mantenha.\\
