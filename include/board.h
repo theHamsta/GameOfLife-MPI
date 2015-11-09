@@ -27,7 +27,7 @@ typedef struct board_s
 } board_t;
 
 
-board_t* board_create(unsigned width, unsigned height);
+board_t* board_create(unsigned int widthDiv4, unsigned int heightDiv3 );
 
 void board_reset(board_t* board);
 

@@ -17,13 +17,13 @@ void field_broadcastBottom( field_t* field, field_t* neighbour );
 void field_broadcastBottomLeft( field_t* field, field_t* neighbour );
 
 
-board_t* board_create(unsigned int widthDiv4, unsigned int heightDiv4 )
+board_t* board_create(unsigned int widthDiv4, unsigned int heightDiv3 )
 {
 	board_t* board = malloc(sizeof(board_t));
 	
 	assert(board);
 	
-	board->heightDiv3 = heightDiv4;
+	board->heightDiv3 = heightDiv3;
 	board->widthDiv4 = widthDiv4;
 	
 	
