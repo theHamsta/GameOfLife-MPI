@@ -139,7 +139,8 @@ int main(int argc, char** argv) {
 
 	if ( numMpiRankX == 1 && numMpiRankY == 1 ) {
 		board_t* board = board_create(globalBoardWidth, globalBoardHeight);
-
+		
+		srand(MAGIC_NUMBER);
 		board_fillRandomly(board);
 		
 		clock_t start = clock();
